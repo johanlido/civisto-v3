@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Something</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #28a745;
+            --primary-light: #e5f7ec;
+            --background: #f8f9fa;
+            --foreground: #333333;
+            --gray-light: #F2F2F2;
+            --gray-medium: #6c757d;
+            --gray: #e9ecef;
+            --white: #ffffff;
+            --human-bg: #f0f7ff;
+            --human-border: #d1e6ff;
+            --assistant-bg: var(--primary-light);
+            --assistant-border: #c1e7d9;
+            --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-inter);
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: var(--white);
+            border-bottom: 1px solid var(--gray);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .back-button {
+            margin-right: 16px;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .page-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-bottom: 180px; /* Space for suggestion area, input box and navbar */
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+        }
+        
+        .assistant-message {
+            align-self: flex-start;
+            background-color: var(--assistant-bg);
+            border: 1px solid var(--assistant-border);
+        }
+        
+        .human-message {
+            align-self: flex-end;
+            background-color: var(--human-bg);
+            border: 1px solid var(--human-border);
+        }
+        
+        .system-message {
+            align-self: center;
+            background-color: var(--gray-light);
+            border: 1px solid var(--gray);
+            font-size: 14px;
+            color: var(--gray-medium);
+            padding: 8px 16px;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background-color: var(--assistant-bg);
+            align-self: flex-start;
+            width: 60px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            animation: typing-animation 1.5s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing-animation {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .bottom-area {
+            position: fixed;
+            bottom: 60px; /* Space for navbar */
+            left: 0;
+            right: 0;
+            background-color: var(--white);
+            border-top: 1px solid var(--gray);
+            z-index: 10;
+        }
+        
+        .suggestions {
+            padding: 12px 16px;
+            background-color: var(--white);
+        }
+        
+        .suggestion-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--gray-medium);
+        }
+        
+        .suggestion-buttons {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .suggestion-buttons::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .suggestion-button {
+            padding: 8px 12px;
+            border: 1px solid var(--gray);
+            border-radius: 16px;
+            background-color: var(--white);
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        
+        .suggestion-button:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary);
+        }
+        
+        .input-container {
+            padding: 16px;
+            background-color: var(--white);
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            border-top: 1px solid var(--gray);
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--gray);
+            border-radius: 24px;
+            font-size: 16px;
+            min-height: 48px;
+            max-height: 120px;
+            overflow-y: auto;
+            resize: none;
+            line-height: 1.5;
+        }
+        
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .send-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .send-button:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        .send-icon {
+            color: white;
+        }
+        
+        .attach-button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-medium);
+        }
+        
+        .image-preview {
+            display: flex;
+            gap: 8px;
+            padding: 8px 0;
+        }
+        
+        .preview-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .remove-image {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .location-info {
+            background-color: var(--gray-light);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            align-self: flex-start;
+            max-width: 85%;
+        }
+        
+        .location-icon {
+            color: var(--primary);
+        }
+        
+        .location-details {
+            flex: 1;
+        }
+        
+        .location-address {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .location-coordinates {
+            font-size: 12px;
+            color: var(--gray-medium);
+        }
+        
+        /* Confirmation screen */
+        .confirmation-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            text-align: center;
+            min-height: 80vh;
+        }
+        
+        .confirmation-icon {
+            width: 80px;
+            height: 80px;
+            background-color: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .confirmation-tick {
+            color: var(--primary);
+        }
+        
+        .confirmation-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .confirmation-message {
+            font-size: 16px;
+            color: var(--gray-medium);
+            margin-bottom: 16px;
+        }
+        
+        .report-id {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 32px;
+        }
+        
+        .new-report-button {
+            padding: 12px 24px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            background-color: var(--white);
+            border-top: 1px solid var(--gray);
+            height: 60px;
+            z-index: 100;
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--gray-medium);
+            text-decoration: none;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .nav-icon {
+            margin-bottom: 4px;
+        }
+        
+        /* Options */
+        .option-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+            align-self: flex-start;
+            width: 85%;
+        }
+        
+        .option-button {
+            padding: 10px 16px;
+            background-color: var(--white);
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .option-button:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary);
+        }
+        
+        /* Hide elements when not needed */
+        .image-preview {
+            display: none;
+        }
+        
+        .active {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <div id="chatInterface">
+        <div class="header">
+            <div class="back-button" id="backButton">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                </svg>
+            </div>
+            <div class="header-title">Report Something</div>
+        </div>
+        
+        <div class="page-content">
+            <div class="chat-container" id="chatContainer">
+                <div class="message assistant-message">
+                    Hi there! I'm here to help you report issues in your community. What would you like to report today?
+                </div>
+                
+                <div class="location-info">
+                    <div class="location-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="10" r="3"></circle>
+                            <path d="M12 2a8 8 0 0 0-8 8c0 1.892.402 3.13 1.5 4.5L12 22l6.5-7.5c1.098-1.37 1.5-2.608 1.5-4.5a8 8 0 0 0-8-8z"></path>
+                        </svg>
+                    </div>
+                    <div class="location-details">
+                        <div class="location-address">Kungsgatan 65, Stockholm</div>
+                        <div class="location-coordinates">59.3293° N, 18.0686° E</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-area">
+                <div class="suggestions">
+                    <div class="suggestion-title">Suggested Categories</div>
+                    <div class="suggestion-buttons">
+                        <button class="suggestion-button" data-category="Street Lighting">Street Lighting</button>
+                        <button class="suggestion-button" data-category="Road Damage">Road Damage</button>
+                        <button class="suggestion-button" data-category="Graffiti">Graffiti</button>
+                        <button class="suggestion-button" data-category="Trash/Litter">Trash/Litter</button>
+                        <button class="suggestion-button" data-category="Safety Hazard">Safety Hazard</button>
+                        <button class="suggestion-button" data-category="Other">Other Issue</button>
+                    </div>
+                </div>
+                
+                <div class="input-container">
+                    <button class="attach-button" id="attachButton">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path>
+                            <line x1="16" y1="5" x2="22" y2="5"></line>
+                            <line x1="19" y1="2" x2="19" y2="8"></line>
+                            <circle cx="9" cy="9" r="2"></circle>
+                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                        </svg>
+                    </button>
+                    
+                    <textarea class="message-input" id="messageInput" placeholder="Describe the issue..." rows="1"></textarea>
+                    
+                    <button class="send-button" id="sendButton">
+                        <svg class="send-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="image-preview" id="imagePreview">
+                    <div class="preview-container">
+                        <img class="preview-image" src="/api/placeholder/80/80" alt="Uploaded issue">
+                        <div class="remove-image" id="removeImage">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confirmationScreen" class="confirmation-screen">
+        <div class="confirmation-icon">
+            <svg class="confirmation-tick" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+        </div>
+        <h2 class="confirmation-title">Report Submitted!</h2>
+        <p class="confirmation-message">Thank you for helping to improve your community. We'll notify you when there's an update.</p>
+        <div class="report-id">Report ID: KS-2025-04836</div>
+        <button class="new-report-button" id="newReportButton">Create New Report</button>
+    </div>
+    
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const chatInterface = document.getElementById('chatInterface');
+        const confirmationScreen = document.getElementById('confirmationScreen');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const attachButton = document.getElementById('attachButton');
+        const imagePreview = document.getElementById('imagePreview');
+        const suggestionButtons = document.querySelectorAll('.suggestion-button');
+        const backButton = document.getElementById('backButton');
+        const removeImage = document.getElementById('removeImage');
+        const newReportButton = document.getElementById('newReportButton');
+        
+        let currentStep = 0;
+        let selectedCategory = '';
+        let questionFlow = [];
+        let reportData = {
+            location: "Kungsgatan 65, Stockholm",
+            coordinates: "59.3293° N, 18.0686° E",
+            category: "",
+            description: "",
+            severity: "",
+            hasPhotos: false
+        };
+        
+        // Enable/disable send button based on input
+        messageInput.addEventListener('input', function() {
+            // Auto resize textarea
+            messageInput.style.height = 'auto';
+            messageInput.style.height = messageInput.scrollHeight + 'px';
+        });
+        
+        // Handle suggestion buttons
+        suggestionButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const category = this.dataset.category;
+                selectedCategory = category;
+                reportData.category = category;
+                
+                addMessage('human', `I'd like to report an issue with ${category}`);
+                
+                // Hide suggestions after selection
+                document.querySelector('.suggestions').style.display = 'none';
+                
+                // Set up question flow based on category
+                setupQuestionFlow(category);
+                
+                // Show first question
+                showNextQuestion();
+            });
+        });
+        
+        // Handle send button
+        sendButton.addEventListener('click', function() {
+            if (messageInput.value.trim() !== '') {
+                processUserResponse();
+            }
+        });
+        
+        // Send message on Enter (but allow Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (messageInput.value.trim() !== '') {
+                    processUserResponse();
+                }
+            }
+        });
+        
+        // Toggle image preview
+        attachButton.addEventListener('click', function() {
+            imagePreview.classList.toggle('active');
+            reportData.hasPhotos = imagePreview.classList.contains('active');
+        });
+        
+        // Remove image
+        removeImage.addEventListener('click', function() {
+            imagePreview.classList.remove('active');
+            reportData.hasPhotos = false;
+        });
+        
+        // Back button
+        backButton.addEventListener('click', function() {
+            // In a real app, this would navigate back
+            alert('Going back to previous page');
+        });
+        
+        // New report button
+        newReportButton.addEventListener('click', function() {
+            // Reset everything
+            resetChat();
+        });
+        
+        // Process user response to current question
+        function processUserResponse() {
+            const message = messageInput.value.trim();
+            addMessage('human', message);
+            
+            // Store response based on current step
+            switch(currentStep - 1) { // -1 because we've already incremented in showNextQuestion
+                case 0: // Description
+                    reportData.description = message;
+                    break;
+                case 1: // Severity
+                    reportData.severity = message;
+                    break;
+            }
+            
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // Move to next question or complete
+            if (currentStep < questionFlow.length) {
+                showNextQuestion();
+            } else {
+                completeReport();
+            }
+        }
+        
+        // Show next question in flow
+        function showNextQuestion() {
+            if (currentStep < questionFlow.length) {
+                // Simulate typing indicator
+                showTypingIndicator();
+                
+                // Show next question after delay
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    
+                    const question = questionFlow[currentStep];
+                    if (question.type === 'text') {
+                        // Simple text question
+                        addMessage('assistant', question.text);
+                    } else if (question.type === 'options') {
+                        // Question with predefined options
+                        addMessage('assistant', question.text);
+                        
+                        // Add option buttons
+                        const optionsDiv = document.createElement('div');
+                        optionsDiv.className = 'option-buttons';
+                        
+                        question.options.forEach(option => {
+                            const button = document.createElement('button');
+                            button.className = 'option-button';
+                            button.textContent = option;
+                            button.addEventListener('click', function() {
+                                // Handle option selection
+                                addMessage('human', option);
+                                
+                                // Store response based on current step
+                                if (currentStep - 1 === 1) { // Severity question
+                                    reportData.severity = option;
+                                }
+                                
+                                // Remove options
+                                optionsDiv.remove();
+                                
+                                // Move to next question or complete
+                                currentStep++;
+                                if (currentStep < questionFlow.length) {
+                                    showNextQuestion();
+                                } else {
+                                    completeReport();
+                                }
+                            });
+                            optionsDiv.appendChild(button);
+                        });
+                        
+                        chatContainer.appendChild(optionsDiv);
+                    }
+                    
+                    currentStep++;
+                    scrollToBottom();
+                }, 1000);
+            }
+        }
+        
+        // Complete report and show confirmation
+        function completeReport() {
+            // Simulate typing indicator
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                
+                // Final message before confirmation
+                addMessage('assistant', "Thank you for providing all the details. I'm submitting your report now...");
+                
+                // Show system message after a delay
+                setTimeout(() => {
+                    const systemMessage = document.createElement('div');
+                    systemMessage.className = 'message system-message';
+                    systemMessage.textContent = "Report submitted successfully!";
+                    chatContainer.appendChild(systemMessage);
+                    
+                    scrollToBottom();
+                    
+                    // Show confirmation screen after a short delay
+                    setTimeout(() => {
+                        chatInterface.style.display = 'none';
+                        confirmationScreen.style.display = 'flex';
+                    }, 1500);
+                }, 1500);
+            }, 1500);
+        }
+        
+        // Set up question flow based on selected category
+        function setupQuestionFlow(category) {
+            questionFlow = [
+                {
+                    type: 'text',
+                    text: getCategorySpecificQuestion(category)
+                },
+                {
+                    type: 'options',
+                    text: "How would you rate the severity of this issue?",
+                    options: ["Critical - Immediate danger", "High - Needs urgent attention", "Medium - Should be fixed soon", "Low - Can be scheduled for later"]
+                }
+            ];
+        }
+        
+        // Get category-specific first question
+        function getCategorySpecificQuestion(category) {
+            switch(category) {
+                case 'Street Lighting':
+                    return "I see you're reporting an issue with street lighting. Please describe the problem in detail. Is the light flickering, completely out, or damaged?";
+                case 'Road Damage':
+                    return "I understand you want to report road damage. Please describe the type of damage (pothole, cracks, etc.) and approximately how large it is.";
+                case 'Graffiti':
+                    return "You're reporting graffiti. Please describe where exactly it is and approximately how large the affected area is.";
+                case 'Trash/Litter':
+                    return "I see you're reporting trash or litter. Please describe what kind of waste it is and how spread out it is.";
+                case 'Safety Hazard':
+                    return "You're reporting a safety hazard. Please describe the hazard in detail and if it poses an immediate danger to people.";
+                default:
+                    return "I understand you want to report an issue. Please describe the problem in as much detail as possible.";
+            }
+        }
+        
+        // Reset chat for new report
+        function resetChat() {
+            // Reset variables
+            currentStep = 0;
+            selectedCategory = '';
+            questionFlow = [];
+            reportData = {
+                location: "Kungsgatan 65, Stockholm",
+                coordinates: "59.3293° N,
