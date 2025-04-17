@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Civisto Mobile App</title>
+    <link rel="stylesheet" href="civisto.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bagel+Fat+One&display=swap" rel="stylesheet">
+    <!-- Feather Icons (similar to Lucide) -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Background with Gradient and Dots Pattern -->
+        <div class="background-pattern"></div>
+
+        <!-- Status Bar -->
+        <div class="status-bar"></div>
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">Civisto</div>
+            <div class="header-icons">
+                <i data-feather="bell"></i>
+                <div class="avatar"></div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Modern Hero Section -->
+            <div class="hero-section">
+                <div class="hero-card">
+                    <!-- Abstract pattern elements -->
+                    <div class="pattern-circle-1"></div>
+                    <div class="pattern-circle-2"></div>
+                    
+                    <h1>Make your community better today</h1>
+                    <p>Report issues in your neighborhood or scan QR codes at designated locations.</p>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">
+                            <i data-feather="plus"></i>
+                            <span>Report</span>
+                        </button>
+                        
+                        <button class="btn btn-secondary">
+                            <i data-feather="grid"></i>
+                            <span>Scan QR</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modern Impact Stats Section -->
+            <div class="stats-section">
+                <h2>Your Community Impact</h2>
+                
+                <div class="stats-card">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-circle green">
+                                <div class="stat-number">12</div>
+                            </div>
+                            <div class="stat-label">Reports</div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-circle blue">
+                                <div class="stat-number">8</div>
+                            </div>
+                            <div class="stat-label">Solved</div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-circle purple">
+                                <div class="stat-number">1.2K</div>
+                            </div>
+                            <div class="stat-label">Points</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span>Progress to Silver</span>
+                            <span>1,250 / 2,000</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Reports -->
+            <div class="reports-section">
+                <div class="section-header">
+                    <h2>Recent Reports</h2>
+                    <span class="view-all">View All <i data-feather="chevron-right"></i></span>
+                </div>
+                
+                <!-- Report Cards -->
+                <div class="report-cards">
+                    <div class="report-card">
+                        <div class="report-content">
+                            <div class="report-image electricity">
+                                <i data-feather="zap"></i>
+                            </div>
+                            <div class="report-details">
+                                <div class="report-status-row">
+                                    <span class="status-badge yellow">In Progress</span>
+                                    <span class="report-time">2h ago</span>
+                                </div>
+                                <h3>Broken Streetlight</h3>
+                                <p>Kungsgatan 32, Stockholm</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="report-card">
+                        <div class="report-content">
+                            <div class="report-image retail">
+                                <i data-feather="shopping-cart"></i>
+                            </div>
+                            <div class="report-details">
+                                <div class="report-status-row">
+                                    <span class="status-badge green">Resolved</span>
+                                    <span class="report-time">Yesterday</span>
+                                </div>
+                                <h3>Abandoned Trolley</h3>
+                                <p>Götgatan 14, Stockholm</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trending Issues -->
+            <div class="trending-section">
+                <h2>Trending in Your Area</h2>
+                <div class="trending-cards">
+                    <div class="trending-card">
+                        <div class="trending-content">
+                            <div class="icon-container red">
+                                <i data-feather="edit"></i>
+                            </div>
+                            <div class="trending-details">
+                                <h3>Graffiti on Main Street</h3>
+                                <p>7 reports this week</p>
+                            </div>
+                            <i data-feather="chevron-right" class="arrow-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="trending-card">
+                        <div class="trending-content">
+                            <div class="icon-container yellow">
+                                <i data-feather="truck"></i>
+                            </div>
+                            <div class="trending-details">
+                                <h3>Illegal Parking Near Park</h3>
+                                <p>5 reports this week</p>
+                            </div>
+                            <i data-feather="chevron-right" class="arrow-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="trending-card">
+                        <div class="trending-content">
+                            <div class="icon-container blue">
+                                <i data-feather="shopping-cart"></i>
+                            </div>
+                            <div class="trending-details">
+                                <h3>Trolleys at Central Station</h3>
+                                <p>3 reports this week</p>
+                            </div>
+                            <i data-feather="chevron-right" class="arrow-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item" data-tab="home">
+                <i data-feather="home"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" data-tab="reports">
+                <i data-feather="clipboard"></i>
+                <span>Reports</span>
+            </div>
+            
+            <div class="nav-item new-report" data-tab="new">
+                <div class="add-button">
+                    <i data-feather="plus"></i>
+                </div>
+                <span>New Report</span>
+            </div>
+            
+            <div class="nav-item" data-tab="rewards">
+                <i data-feather="award"></i>
+                <span>Rewards</span>
+            </div>
+            <div class="nav-item" data-tab="profile">
+                <i data-feather="user"></i>
+                <span>Profile</span>
+            </div>
+        </nav>
+    </div>
+
+    <script src="civisto.js"></script>
+</body>
+</html>
