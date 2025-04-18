@@ -6,44 +6,42 @@ import { supabase } from '@/services/supabase';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/tabs/home'
+    redirect: '/tabs/chat-report'
   },
   {
     path: '/tabs/',
     component: TabsPage,
     children: [
       {
-        path: '',
-        redirect: '/tabs/home'
-      },
-      {
-        path: 'home',
-        component: () => import('@/views/HomePage.vue')
-      },
-      {
-        path: 'reports',
-        component: () => import('@/views/ReportsPage.vue')
+        path: 'chat-report',
+        component: () => import('@/views/ChatReportPage.vue')
       },
       {
         path: 'achievements',
         component: () => import('@/views/AchievementsPage.vue')
       },
       {
+        path: 'new-report',
+        component: () => import('@/views/NewReportPage.vue')
+      },
+      {
+        path: 'reports',
+        component: () => import('@/views/ReportsPage.vue')
+      },
+      {
         path: 'profile',
         component: () => import('@/views/ProfilePage.vue')
+      },
+      {
+        path: 'home',
+        component: () => import('@/views/HomePage.vue')
+      },        
+      {
+        path: '',
+        redirect: '/tabs/chat-report' // relative path, not /tabs/home
       }
     ],
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/new-report',
-    component: () => import('@/views/NewReportPage.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/chat-report',
-    component: () => import('@/views/ChatReportPage.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/auth/signin',
@@ -61,30 +59,26 @@ const routes: Array<RouteRecordRaw> = [
   }
 ]
 
-const baseUrl = import.meta.env.BASE_URL || '/';
-console.log('Router Base URL:', baseUrl);
-
 const router = createRouter({
-  history: createWebHistory(baseUrl),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
+
 // Navigation guard for authentication
 router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  
-  // Check if user is authenticated
   const { data } = await supabase.auth.getUser();
   const user = data?.user;
-  
+
   if (requiresAuth && !user) {
-    // Redirect to login if authentication is required but user is not logged in
     next('/auth/signin');
-  } else if (!requiresAuth && user && (to.path === '/auth/signin' || to.path === '/auth/signup')) {
-    // Redirect to home if user is already logged in and trying to access auth pages
-    next('/');
-  } else {
-    // Proceed as normal
-    next();
+    return;
   }
+  if (!requiresAuth && user && (to.path === '/auth/signin' || to.path === '/auth/signup')) {
+    next('/tabs/home');
+    return;
+  }
+  next();
+  return;
 });
 export default router

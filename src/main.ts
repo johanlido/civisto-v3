@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router';
 
 import { IonicVue } from '@ionic/vue';
+import { defineCustomElements } from '@ionic/pwa-elements/loader'; // Ensure this import is correct
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -24,9 +25,16 @@ import '@ionic/vue/css/display.css';
 import './theme/variables.css';
 
 // Create app instance
-const app = createApp(App)
-  .use(IonicVue)
-  .use(router);
+const app = createApp(App);
+
+// Exclude Ionic custom elements from Vue's component resolution
+app.config.compilerOptions.isCustomElement = tag => tag.startsWith('ion-');
+
+// Load Ionic PWA elements
+defineCustomElements(window);
+
+app.use(IonicVue);
+app.use(router);
 
 // Wait for router to be ready before mounting app
 router.isReady().then(() => {
