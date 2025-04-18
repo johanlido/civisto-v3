@@ -71,7 +71,6 @@
               class="message-input"
               :auto-grow="true"
               placeholder="Describe the issue..."
-              rows="1"
               @keydown.enter.exact.prevent="sendMessage"
             />
             <ion-button class="send-button" :disabled="!input.trim()" @click="sendMessage">
@@ -123,11 +122,12 @@
     category: '',
     description: '',
     severity: '',
-    hasPhotos: false
+    hasPhotos: false,
   });
   
-  let questionFlow: any[] = [];
-  let currentStep = 0;
+  let questionFlow: Array<{ type: string; text: string; options?: string[] }> = [];
+  
+  let currentStep = 0; // Ensure currentStep is a number
   
   function onBack() {
     // In a real app, use router.back()
@@ -190,7 +190,7 @@
           showOptions.value = false;
         } else if (q.type === 'options') {
           addMessage('assistant', q.text);
-          currentOptions.value = q.options;
+          currentOptions.value = q.options || []; // Ensure it's always a string[]
           showOptions.value = true;
         }
         currentStep++;

@@ -1,38 +1,66 @@
+<script setup lang="ts">
+import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, IonRouterOutlet } from '@ionic/vue';
+import {
+  homeOutline,
+  clipboardOutline,
+  addOutline,
+  ribbonOutline,
+  personOutline,
+} from 'ionicons/icons';
+</script>
+
 <template>
-  <ion-page>
-    <ion-tabs>
-      <ion-router-outlet></ion-router-outlet>
-      <ion-tab-bar slot="bottom">
-        <ion-tab-button tab="tab1" href="/tabs/tab1">
-          <ion-icon aria-hidden="true" :icon="home" />
-          <ion-label>Home</ion-label>
-        </ion-tab-button>
-
-        <ion-tab-button tab="tab2" href="/tabs/tab2">
-          <ion-icon aria-hidden="true" :icon="document" />
-          <ion-label>Report</ion-label>
-        </ion-tab-button>
-
-        <ion-tab-button tab="tab3" href="/tabs/tab3">
-          <ion-icon aria-hidden="true" :icon="medalSharp" />
-          <ion-label>Rewards</ion-label>
-        </ion-tab-button>
-
-        <ion-tab-button tab="tab4" href="/tabs/tab4">
-          <ion-icon aria-hidden="true" :icon="person" />
-          <ion-label>Profile</ion-label>
-        </ion-tab-button>
-
-        <ion-tab-button tab="tab0" href="/tabs/tab0">
-          <ion-icon aria-hidden="true" :icon="funnelOutline" />
-          <ion-label>Profile</ion-label>
-        </ion-tab-button>
-      </ion-tab-bar>
-    </ion-tabs>
-  </ion-page>
+  <ion-tabs>
+    <ion-router-outlet></ion-router-outlet>
+    <ion-tab-bar slot="bottom">
+      <ion-tab-button tab="home" href="/tabs/home">
+        <ion-icon :icon="homeOutline"></ion-icon>
+        <ion-label>Home</ion-label>
+      </ion-tab-button>
+      
+      <ion-tab-button tab="reports" href="/tabs/reports">
+        <ion-icon :icon="clipboardOutline"></ion-icon>
+        <ion-label>Reports</ion-label>
+      </ion-tab-button>
+      
+      <ion-tab-button tab="new-report" href="/new-report" class="new-report">
+        <div class="add-button">
+          <ion-icon :icon="addOutline"></ion-icon>
+        </div>
+        <ion-label>New Report</ion-label>
+      </ion-tab-button>
+      
+      <ion-tab-button tab="achievements" href="/tabs/achievements">
+        <ion-icon :icon="ribbonOutline"></ion-icon>
+        <ion-label>Rewards</ion-label>
+      </ion-tab-button>
+      
+      <ion-tab-button tab="profile" href="/tabs/profile">
+        <ion-icon :icon="personOutline"></ion-icon>
+        <ion-label>Profile</ion-label>
+      </ion-tab-button>
+    </ion-tab-bar>
+  </ion-tabs>
 </template>
 
-<script setup lang="ts">
-import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { document, ellipse, funnelOutline, home, medal, medalSharp, person, pricetag, refreshSharp, repeat, square, triangle } from 'ionicons/icons';
-</script>
+<style scoped>
+.new-report {
+  position: relative;
+}
+
+.add-button {
+  width: 48px;
+  height: 48px;
+  background-color: var(--ion-color-primary);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+</style>
