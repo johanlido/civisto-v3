@@ -18,7 +18,7 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'home',
-        component: () => import('@/views/Tab0Page.vue')
+        component: () => import('@/views/HomePage.vue')
       },
       {
         path: 'reports',
@@ -68,7 +68,6 @@ const router = createRouter({
   history: createWebHistory(baseUrl),
   routes
 })
-
 // Navigation guard for authentication
 router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
@@ -88,5 +87,4 @@ router.beforeEach(async (to, from, next) => {
     next();
   }
 });
-
 export default router
