@@ -21,13 +21,41 @@
           </div>
           
           <!-- Location Info -->
-          <div class="location-info">
-            <div class="location-icon">
+          <div class="location-info" style="position:relative;">
+            <div class="location-icon" @click="toggleMap">
               <ion-icon :icon="locationOutline" size="small"></ion-icon>
             </div>
             <div class="location-details">
               <div class="location-address">{{ reportData.location }}</div>
               <div class="location-coordinates">{{ reportData.coordinates }}</div>
+            </div>
+            <div 
+              id="opmap"
+              :style="mapExpanded ? 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1001;background:#fff;display:flex;align-items:center;justify-content:center;' : 'display:none;'"
+              @click.self="toggleMap"
+            >
+              <div style="position:relative;width:90vw;max-width:600px;height:60vh;">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  frameborder="0"
+                  style="border:0; border-radius: 8px;"
+                  :src="mapSrc"
+                  allowfullscreen
+                  @load="attachMapClickHandler"
+                  ref="mapIframe"
+                ></iframe>
+                <ion-button
+                  style="position:absolute;top:10px;right:10px;z-index:10;"
+                  fill="clear"
+                  @click.stop="toggleMap"
+                >
+                  <ion-icon :icon="closeOutline"></ion-icon>
+                </ion-button>
+                <div style="position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:13px;color:#666;">
+                  Click on the map to set a new location
+                </div>
+              </div>
             </div>
           </div>
           
@@ -126,13 +154,12 @@
         </ion-button>
       </div>
     </div>
-    
 
   </ion-page>
 </template>
 
 <script>
-import { defineComponent, ref, reactive, onMounted, nextTick } from 'vue';
+import { defineComponent, ref, reactive, onMounted, nextTick, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
   IonPage, 
@@ -197,6 +224,8 @@ export default defineComponent({
     const showOptions = ref(false);
     const currentOptions = ref([]);
     const showConfirmation = ref(false);
+    const mapExpanded = ref(false);
+    const mapIframe = ref(null);
     
     // Report data
     const reportData = reactive({
@@ -339,38 +368,128 @@ export default defineComponent({
       }
     };
     
+    // Helper to parse coordinates from string to numbers
+    const parseCoordinates = (coordStr) => {
+      const match = coordStr.match(/([0-9.]+)[°] N, ([0-9.]+)[°] E/);
+      if (match) {
+        return {
+          lat: parseFloat(match[1]),
+          long: parseFloat(match[2])
+        };
+      }
+      return { lat: 0, long: 0 };
+    };
+
+    // Helper to format coordinates as string
+    const formatCoordinates = (lat, long) => {
+      return `${lat.toFixed(4)}° N, ${long.toFixed(4)}° E`;
+    };
+
+    // Map src computed from reportData.coordinates
+    const mapSrc = computed(() => {
+      const coords = parseCoordinates(reportData.coordinates);
+      const bbox = [
+        (coords.long - 0.01).toFixed(4),
+        (coords.lat - 0.005).toFixed(4),
+        (coords.long + 0.01).toFixed(4),
+        (coords.lat + 0.005).toFixed(4)
+      ].join(',');
+      return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${coords.lat},${coords.long}`;
+    });
+
+    // Toggle map expanded/collapsed
+    const toggleMap = () => {
+      mapExpanded.value = !mapExpanded.value;
+      if (mapExpanded.value) {
+        nextTick(() => {
+          attachMapClickHandler();
+        });
+      }
+    };
+
+    // Attach click handler to iframe map
+    const attachMapClickHandler = () => {
+      if (!mapExpanded.value) return;
+      const iframe = mapIframe.value?.$el || mapIframe.value;
+      if (!iframe || !iframe.contentWindow) return;
+      iframe.contentWindow.document.body.onclick = null;
+      iframe.contentWindow.document.body.onclick = (e) => {
+        const map = iframe.contentWindow.document.querySelector('img.leaflet-tile');
+        if (!map) return;
+        const rect = map.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const width = rect.width;
+        const height = rect.height;
+        const src = iframe.src;
+        const bboxMatch = src.match(/bbox=([0-9.,\-]+)/);
+        if (!bboxMatch) return;
+        const [minLong, minLat, maxLong, maxLat] = bboxMatch[1].split(',').map(Number);
+        const long = minLong + (maxLong - minLong) * (x / width);
+        const lat = maxLat - (maxLat - minLat) * (y / height);
+        updateLocation(lat, long);
+      };
+    };
+
+    // Update location and coordinates in reportData
+    const updateLocation = async (lat, long) => {
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`);
+        const data = await resp.json();
+        reportData.location = data.display_name || 'Unknown location';
+        reportData.coordinates = formatCoordinates(lat, long);
+      } catch {
+        reportData.location = 'Unknown location';
+        reportData.coordinates = formatCoordinates(lat, long);
+      }
+      mapExpanded.value = false;
+    };
+
     // Send message
-    const sendMessage = () => {
+    const sendMessage = async () => {
       if (userInput.value.trim() === '') return;
-      
+
       const message = userInput.value.trim();
       addMessage('human', message);
-      
+
       // Store response based on current step
       if (currentStep.value === 1) {
         reportData.description = message;
       }
-      
-      // Clear input
+
+      try {
+        // Always use up-to-date description and coordinates
+        const coords = parseCoordinates(reportData.coordinates);
+        await fetch('http://localhost:5678/webhook/7475d8ba-6602-4633-b3f0-30d0c002a1de', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: "https://cdn.shopify.com/s/files/1/0274/7288/7913/files/MicrosoftTeams-image_32.jpg?v=1705315718",
+            description: reportData.description || message,
+            coordinates: coords,
+            location: reportData.location,
+            qrCode: "",
+            timestamp: new Date().toISOString(),
+            userProfile: "Private"
+          })
+        });
+      } catch (e) {
+        // Optionally handle error
+      }
+
       userInput.value = '';
-      
-      // Move to next question
       currentStep.value++;
       showNextQuestion();
     };
-    
+
     // Select option
     const selectOption = (option) => {
       addMessage('human', option);
       reportData.severity = option;
       
-      // Hide options
       showOptions.value = false;
-      
-      // Move to next question
       currentStep.value++;
       
-      // Check if we need to show the next question or complete
       if (currentStep.value <= questionFlow.length) {
         showNextQuestion();
       } else {
@@ -396,11 +515,9 @@ export default defineComponent({
         removeTypingIndicator();
         addMessage('assistant', "Thank you for providing all the details. I'm submitting your report now...");
         
-        // Show system message after delay
         setTimeout(() => {
           addMessage('system', "Report submitted successfully!");
           
-          // Show confirmation screen
           setTimeout(() => {
             showConfirmation.value = true;
           }, 1500);
@@ -410,20 +527,17 @@ export default defineComponent({
     
     // Reset chat for new report
     const resetChat = () => {
-      // Reset all variables
       messages.value = [];
       currentStep.value = 0;
       isTyping.value = false;
       showOptions.value = false;
       showConfirmation.value = false;
       
-      // Reset report data
       reportData.category = "";
       reportData.description = "";
       reportData.severity = "";
       reportData.hasPhotos = false;
       
-      // Add initial message
       setTimeout(() => {
         addMessage('assistant', "Hi there! I'm here to help you report issues in your community. What would you like to report today?");
       }, 100);
@@ -452,8 +566,12 @@ export default defineComponent({
       scrollToBottom,
       goBack,
       resetChat,
+      mapExpanded,
+      mapSrc,
+      toggleMap,
+      mapIframe,
+      attachMapClickHandler,
       
-      // Icons
       arrowBack,
       homeOutline,
       documentTextOutline,

@@ -7,19 +7,14 @@
           <ion-icon :icon="homeOutline"></ion-icon>
           <ion-label>Home</ion-label>
         </ion-tab-button>        
-        <ion-tab-button tab="chat-report" href="/tabs/chat-report">
-          <ion-icon :icon="addOutline"></ion-icon>
-          <ion-label>Chat report</ion-label>
-        </ion-tab-button>
         <ion-tab-button tab="reports" href="/tabs/reports">
           <ion-icon :icon="documentTextOutline"></ion-icon>
           <ion-label>Reports</ion-label>
         </ion-tab-button>
-<!--        <ion-tab-button tab="new-report" href="/tabs/new-report">
-          <ion-icon :icon="addOutline"></ion-icon>
-          <ion-label>New Report</ion-label>
+        <ion-tab-button tab="chat-report" href="/tabs/chat-report">
+          <ion-icon :icon="addCircleOutline"></ion-icon>
+          <ion-label>Chat report</ion-label>
         </ion-tab-button>
--->        
         <ion-tab-button tab="achievements" href="/tabs/achievements">
           <ion-icon :icon="medalOutline"></ion-icon>
           <ion-label>Rewards</ion-label>
@@ -46,7 +41,7 @@ import {
 } from '@ionic/vue';
 import { 
   homeOutline, 
-  addOutline, 
+  addCircleOutline,
   personOutline,
   medalOutline ,
   documentTextOutline
