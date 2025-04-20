@@ -175,8 +175,7 @@ import {
   gridOutline,
   flashOutline,
   cartOutline,
-//  editOutline,
-  truckOutline
+
 } from 'ionicons/icons';
 
 export default defineComponent({
