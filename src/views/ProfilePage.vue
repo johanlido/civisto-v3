@@ -1,19 +1,15 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>My Profile</ion-title>
-        <ion-buttons slot="end">
-          <ion-button class="settings-button">
-            <ion-icon :icon="settingsOutline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-    
-    <ion-content class="ion-padding">
+    <ion-content>
       <div class="container">
-        <ion-card>
+        <div class="header">
+          <h1>My Profile</h1>
+          <ion-button fill="clear" class="settings-button">
+            <ion-icon :icon="settingsOutline" />
+          </ion-button>
+        </div>
+        
+        <ion-card class="profile-card">
           <ion-card-content>
             <div class="profile-section">
               <div class="avatar">LA</div>
@@ -45,230 +41,168 @@
         
         <div class="section-title">Account Settings</div>
         
-        <ion-card class="setting-row" button>
-          <ion-card-content>
+        <ion-list>
+          <ion-item class="setting-item" v-for="(setting, index) in settings" :key="index" button detail>
             <div class="setting-left">
-              <ion-icon class="setting-icon" :icon="personOutline"></ion-icon>
+              <ion-icon :icon="setting.icon" class="setting-icon" />
               <div class="setting-content">
-                <div class="setting-title">Personal Information</div>
-                <div class="setting-description">Update your name and contact details</div>
+                <div class="setting-title">{{ setting.title }}</div>
+                <div class="setting-description">{{ setting.description }}</div>
               </div>
             </div>
-            <ion-icon :icon="chevronForwardOutline"></ion-icon>
-          </ion-card-content>
-        </ion-card>
+            
+            <div slot="end" class="setting-value" v-if="setting.value">
+              <span v-if="setting.badge" class="badge">{{ setting.value }}</span>
+              <span v-else>{{ setting.value }}</span>
+            </div>
+          </ion-item>
+        </ion-list>
         
-        <ion-card class="setting-row" button>
-          <ion-card-content>
-            <div class="setting-left">
-              <ion-icon class="setting-icon" :icon="globeOutline"></ion-icon>
-              <div class="setting-content">
-                <div class="setting-title">Municipality</div>
-                <div class="setting-description">Change your primary municipality</div>
-              </div>
-            </div>
-            <div class="setting-value">
-              Stockholm
-              <ion-icon :icon="chevronForwardOutline"></ion-icon>
-            </div>
-          </ion-card-content>
-        </ion-card>
-        
-        <ion-card class="setting-row" button>
-          <ion-card-content>
-            <div class="setting-left">
-              <ion-icon class="setting-icon" :icon="notificationsOutline"></ion-icon>
-              <div class="setting-content">
-                <div class="setting-title">Notifications</div>
-                <div class="setting-description">Manage notification preferences</div>
-              </div>
-            </div>
-            <ion-icon :icon="chevronForwardOutline"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-        
-        <ion-card class="setting-row" button>
-          <ion-card-content>
-            <div class="setting-left">
-              <ion-icon class="setting-icon" :icon="ribbonOutline"></ion-icon>
-              <div class="setting-content">
-                <div class="setting-title">Rewards</div>
-                <div class="setting-description">View available and redeemed rewards</div>
-              </div>
-            </div>
-            <div class="setting-value">
-              <ion-badge class="badge">3 Available</ion-badge>
-              <ion-icon :icon="chevronForwardOutline"></ion-icon>
-            </div>
-          </ion-card-content>
-        </ion-card>
-        
-        <ion-card class="setting-row" button>
-          <ion-card-content>
-            <div class="setting-left">
-              <ion-icon class="setting-icon" :icon="lockClosedOutline"></ion-icon>
-              <div class="setting-content">
-                <div class="setting-title">Privacy</div>
-                <div class="setting-description">Control your data and privacy settings</div>
-              </div>
-            </div>
-            <ion-icon :icon="chevronForwardOutline"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-        
-        <ion-card class="setting-row" button>
-          <ion-card-content>
-            <div class="setting-left">
-              <ion-icon class="setting-icon" :icon="helpCircleOutline"></ion-icon>
-              <div class="setting-content">
-                <div class="setting-title">Help & Support</div>
-                <div class="setting-description">Get assistance or report an issue</div>
-              </div>
-            </div>
-            <ion-icon :icon="chevronForwardOutline"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-        
-        <ion-card class="setting-row" button>
-          <ion-card-content>
-            <div class="setting-left">
-              <ion-icon class="setting-icon" :icon="documentTextOutline"></ion-icon>
-              <div class="setting-content">
-                <div class="setting-title">Terms & Conditions</div>
-                <div class="setting-description">Read our terms and privacy policy</div>
-              </div>
-            </div>
-            <ion-icon :icon="chevronForwardOutline"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-        
-        <ion-button expand="block" color="danger" class="sign-out-button" @click="handleSignOut">
-          <ion-icon slot="start" :icon="logOutOutline" class="sign-out-icon"></ion-icon>
+        <ion-button expand="block" color="danger" fill="outline" class="sign-out-button">
+          <ion-icon slot="start" :icon="logOutOutline" />
           Sign Out
         </ion-button>
       </div>
     </ion-content>
-    
-    <ion-tabs>
-      <ion-tab-bar slot="bottom" class="bottom-nav">
-        <ion-tab-button tab="home">
-          <ion-icon :icon="homeOutline"></ion-icon>
-          <ion-label>Home</ion-label>
-        </ion-tab-button>
-        
-        <ion-tab-button tab="reports">
-          <ion-icon :icon="clipboardOutline"></ion-icon>
-          <ion-label>Reports</ion-label>
-        </ion-tab-button>
-        
-        <ion-tab-button tab="new-report" class="new-report">
-          <div class="add-button">
-            <ion-icon :icon="addOutline"></ion-icon>
-          </div>
-          <ion-label>New Report</ion-label>
-        </ion-tab-button>
-        
-        <ion-tab-button tab="rewards">
-          <ion-icon :icon="ribbonOutline"></ion-icon>
-          <ion-label>Rewards</ion-label>
-        </ion-tab-button>
-        
-        <ion-tab-button tab="profile" class="active">
-          <ion-icon :icon="personOutline"></ion-icon>
-          <ion-label>Profile</ion-label>
-        </ion-tab-button>
-      </ion-tab-bar>
-    </ion-tabs>
   </ion-page>
 </template>
 
-<script setup lang="ts">
-import { useRouter } from 'vue-router';
+<script>
+import { defineComponent } from 'vue';
 import { 
-  IonPage, 
-  IonHeader, 
-  IonToolbar, 
-  IonTitle, 
-  IonContent, 
-  IonButtons, 
-  IonButton, 
-  IonIcon, 
-  IonCard, 
+  IonPage,
+  IonContent,
+  IonCard,
   IonCardContent,
-  IonBadge,
+  IonButton,
+  IonIcon,
+  IonList,
+  IonItem,
   IonTabs,
   IonTabBar,
   IonTabButton,
-  IonLabel,
-  IonToast
+  IonRouterOutlet,
+  IonLabel
 } from '@ionic/vue';
 import { 
-  settingsOutline, 
-  personOutline, 
-  globeOutline, 
-  notificationsOutline, 
-  ribbonOutline, 
-  lockClosedOutline, 
-  helpCircleOutline, 
-  documentTextOutline, 
+  settingsOutline,
+  personOutline,
+  globeOutline,
+  notificationsOutline,
+  medalOutline,
+  lockClosedOutline,
+  helpCircleOutline,
+  documentTextOutline,
   logOutOutline,
-  chevronForwardOutline,
   homeOutline,
-  clipboardOutline,
-  addOutline
+  chevronForward
 } from 'ionicons/icons';
-import { signOut } from '@/services/supabase';
 
-const router = useRouter();
+export default defineComponent({
+  name: 'ProfilePage',
+  components: {
+    IonPage,
+    IonContent,
+    IonCard,
+    IonCardContent,
+    IonButton,
+    IonIcon,
+    IonList,
+    IonItem,
+    IonTabs,
+    IonTabBar,
+    IonTabButton,
+    IonRouterOutlet,
+    IonLabel
+  },
+  setup() {
+    const settings = [
+      {
+        icon: personOutline,
+        title: 'Personal Information',
+        description: 'Update your name and contact details'
+      },
+      {
+        icon: globeOutline,
+        title: 'Municipality',
+        description: 'Change your primary municipality',
+        value: 'Stockholm'
+      },
+      {
+        icon: notificationsOutline,
+        title: 'Notifications',
+        description: 'Manage notification preferences'
+      },
+      {
+        icon: medalOutline,
+        title: 'Rewards',
+        description: 'View available and redeemed rewards',
+        value: '3 Available',
+        badge: true
+      },
+      {
+        icon: lockClosedOutline,
+        title: 'Privacy',
+        description: 'Control your data and privacy settings'
+      },
+      {
+        icon: helpCircleOutline,
+        title: 'Help & Support',
+        description: 'Get assistance or report an issue'
+      },
+      {
+        icon: documentTextOutline,
+        title: 'Terms & Conditions',
+        description: 'Review our terms and policies'
+      }
+    ];
 
-const handleSignOut = async () => {
-  const { error } = await signOut();
-  
-  if (error) {
-  /*  IonToast({
-      message: 'Failed to sign out. Please try again.',
-      duration: 3000,
-      color: 'danger'
-    });*/
-    return;
+    return {
+      settings,
+      settingsOutline,
+      personOutline,
+      medalOutline,
+      documentTextOutline,
+      homeOutline,
+      logOutOutline
+    };
   }
-  
-  router.replace('/auth/signin');
-};
+});
 </script>
 
 <style scoped>
-:root {
-  --primary: #28a745;
-  --primary-light: #e5f7ec;
-  --background: #f8f9fa;
-  --foreground: #333333;
-  --gray-light: #F2F2F2;
-  --gray-medium: #6c757d;
-  --gray: #e9ecef;
-}
-
 .container {
   max-width: 650px;
   margin: 0 auto;
-  padding-bottom: 70px;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
 }
 
 .settings-button {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  --border-radius: 8px;
+  --box-shadow: none;
   --background: #fff;
-  --color: var(--foreground);
-  --border-color: var(--gray);
-  --border-style: solid;
-  --border-width: 1px;
+  --border-color: var(--ion-color-light);
 }
 
-ion-card {
-  margin: 0 0 24px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+.profile-card {
+  margin-bottom: 24px;
+  box-shadow: none;
+  border: 1px solid var(--ion-color-light);
 }
 
 .profile-section {
@@ -283,32 +217,30 @@ ion-card {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 2px solid var(--primary);
+  border: 2px solid var(--ion-color-primary);
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 24px;
-  color: var(--primary);
+  color: var(--ion-color-primary);
   margin-bottom: 16px;
-  background-color: var(--primary-light);
 }
 
 .profile-name {
   font-size: 22px;
   font-weight: 600;
   margin-bottom: 4px;
-  color: var(--foreground);
 }
 
 .profile-location {
   font-size: 16px;
-  color: var(--gray-medium);
+  color: var(--ion-color-medium);
   margin-bottom: 4px;
 }
 
 .profile-member {
   font-size: 14px;
-  color: var(--gray-medium);
+  color: var(--ion-color-medium);
 }
 
 .stats-grid {
@@ -318,7 +250,7 @@ ion-card {
 }
 
 .stat-box {
-  background-color: var(--primary-light);
+  background-color: var(--ion-color-primary-tint);
   border-radius: 8px;
   padding: 16px;
   text-align: center;
@@ -327,45 +259,46 @@ ion-card {
 .stat-number {
   font-size: 32px;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--ion-color-primary);
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 14px;
-  color: var(--primary);
+  color: var(--ion-color-primary);
 }
 
 .section-title {
   font-size: 24px;
   font-weight: 600;
   margin-bottom: 16px;
-  color: var(--foreground);
 }
 
-.setting-row {
+ion-list {
+  background: transparent;
   padding: 0;
-  margin-bottom: 16px;
-  cursor: pointer;
+  margin-bottom: 24px;
 }
 
-.setting-row ion-card-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
+.setting-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-light);
 }
 
 .setting-left {
   display: flex;
   gap: 12px;
   align-items: center;
+  padding: 16px;
 }
 
 .setting-icon {
-  width: 24px;
-  height: 24px;
-  color: var(--primary);
+  color: var(--ion-color-primary);
+  font-size: 24px;
 }
 
 .setting-content {
@@ -377,76 +310,42 @@ ion-card {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 2px;
-  color: var(--foreground);
 }
 
 .setting-description {
   font-size: 14px;
-  color: var(--gray-medium);
+  color: var(--ion-color-medium);
 }
 
 .setting-value {
-  font-size: 14px;
-  color: var(--gray-medium);
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-right: 16px;
+  font-size: 14px;
+  color: var(--ion-color-medium);
 }
 
 .badge {
-  --background: var(--primary);
-  --color: white;
-  --padding-start: 8px;
-  --padding-end: 8px;
-  --padding-top: 4px;
-  --padding-bottom: 4px;
+  background-color: var(--ion-color-primary);
+  color: white;
+  border-radius: 16px;
+  padding: 4px 8px;
   font-size: 12px;
   font-weight: 500;
 }
 
 .sign-out-button {
-  margin-top: 16px;
   --border-radius: 8px;
-  --background: white;
-  --color: #dc3545;
   --border-color: #f8d7da;
-  --border-style: solid;
-  --border-width: 1px;
-  --box-shadow: none;
+  --color: #dc3545;
   font-weight: 500;
+  margin-bottom: 24px;
 }
 
-.sign-out-icon {
-  color: #dc3545;
-}
-
-/* Bottom navigation */
-.bottom-nav {
-  border-top: 1px solid var(--gray);
-}
-
-.new-report {
-  position: relative;
-}
-
-.add-button {
-  width: 48px;
-  height: 48px;
-  background-color: var(--primary);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  position: absolute;
-  top: -24px;
-  left: 50%;
-  transform: translateX(-50%);
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-}
-
-ion-tab-button.active {
-  color: var(--primary);
-  font-weight: 600;
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 </style>
