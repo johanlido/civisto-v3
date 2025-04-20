@@ -21,10 +21,6 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/AchievementsPage.vue')
       },
       {
-        path: 'new-report',
-        component: () => import('@/views/NewReportPage.vue')
-      },
-      {
         path: 'reports',
         component: () => import('@/views/ReportsPage.vue')
       },
@@ -38,7 +34,7 @@ const routes: Array<RouteRecordRaw> = [
       },        
       {
         path: '',
-        redirect: '/tabs/chat-report' // relative path, not /tabs/home
+        redirect: '/tabs/chat-report' 
       }
     ],
     meta: { requiresAuth: false }
