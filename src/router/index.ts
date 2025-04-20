@@ -1,43 +1,61 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
-import TabsPage from '../views/TabsPage.vue'
+import TabsPage from '../views/TabsPage.vue';
+import { supabase } from '@/services/supabase';
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/tabs/tab1'
+    redirect: '/tabs/chat-report'
   },
   {
     path: '/tabs/',
     component: TabsPage,
     children: [
       {
+        path: 'chat-report',
+        component: () => import('@/views/ChatReportPage.vue')
+      },
+      {
+        path: 'achievements',
+        component: () => import('@/views/AchievementsPage.vue')
+      },
+      {
+        path: 'new-report',
+        component: () => import('@/views/NewReportPage.vue')
+      },
+      {
+        path: 'reports',
+        component: () => import('@/views/ReportsPage.vue')
+      },
+      {
+        path: 'profile',
+        component: () => import('@/views/ProfilePage.vue')
+      },
+      {
+        path: 'home',
+        component: () => import('@/views/HomePage.vue')
+      },        
+      {
         path: '',
-        redirect: '/tabs/tab1'
-      },
-      {
-        path: 'tab1',
-        component: () => import('@/views/TabChatReport.vue')
-      },
-      {
-        path: 'tab2',
-        component: () => import('@/views/Tab2Page.vue')
-      },
-      {
-        path: 'tab3',
-        component: () => import('@/views/Tab3Page.vue')
-      },
-      {
-        path: 'tab4',
-        component: () => import('@/views/Tab4Page.vue')
-      },
-      {
-        path: 'tab0',
-        component: () => import('@/views/Tab0Page.vue')
-      }            
-
-      
-    ]
+        redirect: '/tabs/chat-report' // relative path, not /tabs/home
+      }
+    ],
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/auth/signin',
+    component: () => import('@/views/auth/SignInPage.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/auth/signup',
+    component: () => import('@/views/auth/SignUpPage.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/tabs/home' // Redirect undefined paths to the home page
   }
 ]
 
@@ -46,4 +64,21 @@ const router = createRouter({
   routes
 })
 
+// Navigation guard for authentication
+router.beforeEach(async (to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const { data } = await supabase.auth.getUser();
+  const user = data?.user;
+
+  if (requiresAuth && !user) {
+    next('/auth/signin');
+    return;
+  }
+  if (!requiresAuth && user && (to.path === '/auth/signin' || to.path === '/auth/signup')) {
+    next('/tabs/home');
+    return;
+  }
+  next();
+  return;
+});
 export default router
