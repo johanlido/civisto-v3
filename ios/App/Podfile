@@ -3,6 +3,9 @@ require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 platform :ios, '14.0'
 use_frameworks!
 
+# Specify the pod sources at the top level
+source 'https://cdn.cocoapods.org/'
+
 # workaround to avoid Xcode caching of Pods that requires
 # Product -> Clean Build Folder after new Cordova plugins installed
 # Requires CocoaPods 1.6 or newer
@@ -11,14 +14,6 @@ install! 'cocoapods', :disable_input_output_paths => true
 # IMPORTANT: This project uses CocoaPods v1.16.2 in deployment mode
 # All team members should use this version for consistent builds
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
-
-# Configuration for deployment mode to ensure consistent builds
-install! 'cocoapods', 
-  :disable_input_output_paths => true, 
-  :deterministic_uuids => false, 
-  :lock_pod_sources => false,
-  # Ensure consistent CDN source usage
-  :sources => ['https://cdn.cocoapods.org/']
 
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
