@@ -8,6 +8,14 @@ use_frameworks!
 # Requires CocoaPods 1.6 or newer
 install! 'cocoapods', :disable_input_output_paths => true
 
+# Allow CocoaPods to update checksums in deployment mode
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+# Add installation option to allow deployment mode checkout with changes
+install! 'cocoapods', 
+  :disable_input_output_paths => true, 
+  :deterministic_uuids => false,
+  :lock_pod_sources => false
+
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
