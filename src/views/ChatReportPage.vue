@@ -21,41 +21,13 @@
           </div>
           
           <!-- Location Info -->
-          <div class="location-info" style="position:relative;">
-            <div class="location-icon" @click="toggleMap">
+          <div class="location-info">
+            <div class="location-icon">
               <ion-icon :icon="locationOutline" size="small"></ion-icon>
             </div>
             <div class="location-details">
               <div class="location-address">{{ reportData.location }}</div>
               <div class="location-coordinates">{{ reportData.coordinates }}</div>
-            </div>
-            <div 
-              id="opmap"
-              :style="mapExpanded ? 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1001;background:#fff;display:flex;align-items:center;justify-content:center;' : 'display:none;'"
-              @click.self="toggleMap"
-            >
-              <div style="position:relative;width:90vw;max-width:600px;height:60vh;">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  frameborder="0"
-                  style="border:0; border-radius: 8px;"
-                  :src="mapSrc"
-                  allowfullscreen
-                  @load="attachMapClickHandler"
-                  ref="mapIframe"
-                ></iframe>
-                <ion-button
-                  style="position:absolute;top:10px;right:10px;z-index:10;"
-                  fill="clear"
-                  @click.stop="toggleMap"
-                >
-                  <ion-icon :icon="closeOutline"></ion-icon>
-                </ion-button>
-                <div style="position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:13px;color:#666;">
-                  Click on the map to set a new location
-                </div>
-              </div>
             </div>
           </div>
           
@@ -154,12 +126,11 @@
         </ion-button>
       </div>
     </div>
-
-  </ion-page>
+      </ion-page>
 </template>
 
 <script>
-import { defineComponent, ref, reactive, onMounted, nextTick, computed } from 'vue';
+import { defineComponent, ref, reactive, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
   IonPage, 
@@ -224,8 +195,6 @@ export default defineComponent({
     const showOptions = ref(false);
     const currentOptions = ref([]);
     const showConfirmation = ref(false);
-    const mapExpanded = ref(false);
-    const mapIframe = ref(null);
     
     // Report data
     const reportData = reactive({
@@ -368,128 +337,38 @@ export default defineComponent({
       }
     };
     
-    // Helper to parse coordinates from string to numbers
-    const parseCoordinates = (coordStr) => {
-      const match = coordStr.match(/([0-9.]+)[°] N, ([0-9.]+)[°] E/);
-      if (match) {
-        return {
-          lat: parseFloat(match[1]),
-          long: parseFloat(match[2])
-        };
-      }
-      return { lat: 0, long: 0 };
-    };
-
-    // Helper to format coordinates as string
-    const formatCoordinates = (lat, long) => {
-      return `${lat.toFixed(4)}° N, ${long.toFixed(4)}° E`;
-    };
-
-    // Map src computed from reportData.coordinates
-    const mapSrc = computed(() => {
-      const coords = parseCoordinates(reportData.coordinates);
-      const bbox = [
-        (coords.long - 0.01).toFixed(4),
-        (coords.lat - 0.005).toFixed(4),
-        (coords.long + 0.01).toFixed(4),
-        (coords.lat + 0.005).toFixed(4)
-      ].join(',');
-      return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${coords.lat},${coords.long}`;
-    });
-
-    // Toggle map expanded/collapsed
-    const toggleMap = () => {
-      mapExpanded.value = !mapExpanded.value;
-      if (mapExpanded.value) {
-        nextTick(() => {
-          attachMapClickHandler();
-        });
-      }
-    };
-
-    // Attach click handler to iframe map
-    const attachMapClickHandler = () => {
-      if (!mapExpanded.value) return;
-      const iframe = mapIframe.value?.$el || mapIframe.value;
-      if (!iframe || !iframe.contentWindow) return;
-      iframe.contentWindow.document.body.onclick = null;
-      iframe.contentWindow.document.body.onclick = (e) => {
-        const map = iframe.contentWindow.document.querySelector('img.leaflet-tile');
-        if (!map) return;
-        const rect = map.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const width = rect.width;
-        const height = rect.height;
-        const src = iframe.src;
-        const bboxMatch = src.match(/bbox=([0-9.,\-]+)/);
-        if (!bboxMatch) return;
-        const [minLong, minLat, maxLong, maxLat] = bboxMatch[1].split(',').map(Number);
-        const long = minLong + (maxLong - minLong) * (x / width);
-        const lat = maxLat - (maxLat - minLat) * (y / height);
-        updateLocation(lat, long);
-      };
-    };
-
-    // Update location and coordinates in reportData
-    const updateLocation = async (lat, long) => {
-      try {
-        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`);
-        const data = await resp.json();
-        reportData.location = data.display_name || 'Unknown location';
-        reportData.coordinates = formatCoordinates(lat, long);
-      } catch {
-        reportData.location = 'Unknown location';
-        reportData.coordinates = formatCoordinates(lat, long);
-      }
-      mapExpanded.value = false;
-    };
-
     // Send message
-    const sendMessage = async () => {
+    const sendMessage = () => {
       if (userInput.value.trim() === '') return;
-
+      
       const message = userInput.value.trim();
       addMessage('human', message);
-
+      
       // Store response based on current step
       if (currentStep.value === 1) {
         reportData.description = message;
       }
-
-      try {
-        // Always use up-to-date description and coordinates
-        const coords = parseCoordinates(reportData.coordinates);
-        await fetch('http://localhost:5678/webhook/7475d8ba-6602-4633-b3f0-30d0c002a1de', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image: "https://cdn.shopify.com/s/files/1/0274/7288/7913/files/MicrosoftTeams-image_32.jpg?v=1705315718",
-            description: reportData.description || message,
-            coordinates: coords,
-            location: reportData.location,
-            qrCode: "",
-            timestamp: new Date().toISOString(),
-            userProfile: "Private"
-          })
-        });
-      } catch (e) {
-        // Optionally handle error
-      }
-
+      
+      // Clear input
       userInput.value = '';
+      
+      // Move to next question
       currentStep.value++;
       showNextQuestion();
     };
-
+    
     // Select option
     const selectOption = (option) => {
       addMessage('human', option);
       reportData.severity = option;
       
+      // Hide options
       showOptions.value = false;
+      
+      // Move to next question
       currentStep.value++;
       
+      // Check if we need to show the next question or complete
       if (currentStep.value <= questionFlow.length) {
         showNextQuestion();
       } else {
@@ -515,9 +394,11 @@ export default defineComponent({
         removeTypingIndicator();
         addMessage('assistant', "Thank you for providing all the details. I'm submitting your report now...");
         
+        // Show system message after delay
         setTimeout(() => {
           addMessage('system', "Report submitted successfully!");
           
+          // Show confirmation screen
           setTimeout(() => {
             showConfirmation.value = true;
           }, 1500);
@@ -527,17 +408,20 @@ export default defineComponent({
     
     // Reset chat for new report
     const resetChat = () => {
+      // Reset all variables
       messages.value = [];
       currentStep.value = 0;
       isTyping.value = false;
       showOptions.value = false;
       showConfirmation.value = false;
       
+      // Reset report data
       reportData.category = "";
       reportData.description = "";
       reportData.severity = "";
       reportData.hasPhotos = false;
       
+      // Add initial message
       setTimeout(() => {
         addMessage('assistant', "Hi there! I'm here to help you report issues in your community. What would you like to report today?");
       }, 100);
@@ -566,12 +450,8 @@ export default defineComponent({
       scrollToBottom,
       goBack,
       resetChat,
-      mapExpanded,
-      mapSrc,
-      toggleMap,
-      mapIframe,
-      attachMapClickHandler,
       
+      // Icons
       arrowBack,
       homeOutline,
       documentTextOutline,
@@ -841,385 +721,5 @@ export default defineComponent({
   font-weight: 600;
   color: var(--primary);
   margin-bottom: 32px;
-}
-</style>
-
-<style>
-/* Report Chat CSS */
-:root {
-  --ion-color-primary: #28a745;
-  --ion-color-primary-rgb: 40, 167, 69;
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #23933d;
-  --ion-color-primary-tint: #3eb058;
-  
-  --primary: #28a745;
-  --primary-light: #e5f7ec;
-  --background: #f8f9fa;
-  --foreground: #333333;
-  --gray-light: #F2F2F2;
-  --gray-medium: #6c757d;
-  --gray: #e9ecef;
-  --white: #ffffff;
-  --human-bg: #f0f7ff;
-  --human-border: #d1e6ff;
-  --assistant-bg: var(--primary-light);
-  --assistant-border: #c1e7d9;
-}
-
-/* Global Styles */
-* {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-}
-
-ion-content {
-  --background: var(--background);
-}
-
-ion-content::part(scroll) {
-  padding-bottom: 180px;
-}
-
-/* Chat Container */
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-}
-
-/* Message Styles */
-.message {
-  max-width: 85%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  line-height: 1.5;
-  font-size: 15px;
-}
-
-.assistant-message {
-  align-self: flex-start;
-  background-color: var(--assistant-bg);
-  border: 1px solid var(--assistant-border);
-}
-
-.human-message {
-  align-self: flex-end;
-  background-color: var(--human-bg);
-  border: 1px solid var(--human-border);
-}
-
-.system-message {
-  align-self: center;
-  background-color: var(--gray-light);
-  border: 1px solid var(--gray);
-  font-size: 14px;
-  color: var(--gray-medium);
-  padding: 8px 16px;
-}
-
-/* Location Info */
-.location-info {
-  background-color: var(--gray-light);
-  border-radius: 8px;
-  padding: 12px;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  align-self: flex-start;
-  max-width: 85%;
-}
-
-.location-icon {
-  color: var(--primary);
-}
-
-.location-details {
-  flex: 1;
-}
-
-.location-address {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.location-coordinates {
-  font-size: 12px;
-  color: var(--gray-medium);
-}
-
-/* Typing Indicator */
-.typing-indicator {
-  display: flex;
-  gap: 4px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background-color: var(--assistant-bg);
-  align-self: flex-start;
-  width: 60px;
-}
-
-.typing-dot {
-  width: 8px;
-  height: 8px;
-  background-color: var(--primary);
-  border-radius: 50%;
-  animation: typing-animation 1.5s infinite ease-in-out;
-}
-
-.typing-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.typing-dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes typing-animation {
-  0%, 60%, 100% {
-    transform: translateY(0);
-  }
-  30% {
-    transform: translateY(-10px);
-  }
-}
-
-/* Bottom Area */
-.bottom-area {
-  position: fixed;
-  bottom: 60px; /* Space for navbar */
-  left: 0;
-  right: 0;
-  background-color: var(--white);
-  border-top: 1px solid var(--gray);
-  z-index: 10;
-}
-
-/* Suggestions */
-.suggestions {
-  padding: 12px 16px;
-  background-color: var(--white);
-}
-
-.suggestion-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--gray-medium);
-}
-
-.suggestion-buttons {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.suggestion-buttons::-webkit-scrollbar {
-  display: none;
-}
-
-/* Override Ionic button styles for suggestions */
-ion-button.suggestion-button {
-  --border-radius: 16px;
-  --border-color: var(--gray);
-  --background: var(--white);
-  --color: var(--foreground);
-  --box-shadow: none;
-  margin: 0;
-  font-size: 14px;
-  font-weight: 500;
-  height: 36px;
-  --padding-start: 12px;
-  --padding-end: 12px;
-}
-
-/* Input Container */
-.input-container {
-  padding: 12px 16px;
-  background-color: var(--white);
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
-  border-top: 1px solid var(--gray);
-}
-
-ion-textarea.message-input {
-  --background: var(--white);
-  --border-radius: 24px;
-  --border-color: var(--gray);
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --padding-top: 12px;
-  --padding-bottom: 12px;
-  --placeholder-color: var(--gray-medium);
-  margin: 0;
-  flex: 1;
-  max-height: 120px;
-}
-
-ion-button.attach-button {
-  --padding-start: 8px;
-  --padding-end: 8px;
-  --box-shadow: none;
-  --background: transparent;
-  --color: var(--gray-medium);
-  margin: 0;
-}
-
-ion-button.send-button {
-  width: 48px;
-  height: 48px;
-  --border-radius: 50%;
-  --background: var(--primary);
-  --color: var(--white);
-  margin: 0;
-}
-
-ion-button.send-button[disabled] {
-  --background: var(--gray);
-  opacity: 0.7;
-}
-
-/* Image Preview */
-.image-preview {
-  display: flex;
-  gap: 8px;
-  padding: 8px 16px;
-  background-color: var(--white);
-}
-
-.preview-container {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-ion-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.remove-image {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 20px;
-  height: 20px;
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  color: white;
-}
-
-/* Option Buttons */
-.option-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-  align-self: flex-start;
-  width: 85%;
-}
-
-ion-button.option-button {
-  --background: var(--white);
-  --background-hover: var(--primary-light);
-  --color: var(--foreground);
-  --border-color: var(--gray);
-  --border-radius: 8px;
-  margin: 0;
-  text-transform: none;
-  font-size: 14px;
-  font-weight: 400;
-  height: auto;
-  --padding-top: 10px;
-  --padding-bottom: 10px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
-
-/* Confirmation Screen */
-.confirmation-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 16px;
-  text-align: center;
-  min-height: 80vh;
-}
-
-.confirmation-icon {
-  width: 80px;
-  height: 80px;
-  background-color: var(--primary-light);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.confirmation-tick {
-  color: var(--primary);
-  font-size: 48px;
-}
-
-.confirmation-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.confirmation-message {
-  font-size: 16px;
-  color: var(--gray-medium);
-  margin-bottom: 16px;
-}
-
-.report-id {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--primary);
-  margin-bottom: 32px;
-}
-
-ion-button.new-report-button {
-  --background: var(--primary);
-  --color: var(--white);
-  --border-radius: 8px;
-  --padding-top: 12px;
-  --padding-bottom: 12px;
-  --padding-start: 24px;
-  --padding-end: 24px;
-  max-width: 250px;
-  margin: 0 auto;
-  font-weight: 600;
-}
-
-/* Tab Styles */
-ion-tab-bar {
-  --background: var(--white);
-  border-top: 1px solid var(--gray);
-}
-
-ion-tab-button {
-  --color: var(--gray-medium);
-  --color-selected: var(--primary);
-}
-
-ion-tab-button[selected] ion-icon {
-  color: var(--primary);
 }
 </style>

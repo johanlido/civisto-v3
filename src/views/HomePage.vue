@@ -889,7 +889,11 @@ ion-badge {
     font-size: 12px;
   }
   
-  ion-icon {
+  /* Replace the general ion-icon selector with specific ones */
+  .hero-section ion-icon,
+  .section-header ion-icon,
+  .report-content ion-icon,
+  .trending-content ion-icon {
     font-size: 14px;
   }
   
