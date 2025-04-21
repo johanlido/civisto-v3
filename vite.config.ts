@@ -19,5 +19,17 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom'
+  },
+  build: {
+    chunkSizeWarningLimit: 1000, // Increase warning threshold
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    }
   }
 })
