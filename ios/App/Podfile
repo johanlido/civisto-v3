@@ -8,13 +8,17 @@ use_frameworks!
 # Requires CocoaPods 1.6 or newer
 install! 'cocoapods', :disable_input_output_paths => true
 
-# Allow CocoaPods to update checksums in deployment mode
+# IMPORTANT: This project uses CocoaPods v1.16.2 in deployment mode
+# All team members should use this version for consistent builds
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
-# Add installation option to allow deployment mode checkout with changes
+
+# Configuration for deployment mode to ensure consistent builds
 install! 'cocoapods', 
   :disable_input_output_paths => true, 
-  :deterministic_uuids => false,
-  :lock_pod_sources => false
+  :deterministic_uuids => false, 
+  :lock_pod_sources => false,
+  # Ensure consistent CDN source usage
+  :sources => ['https://cdn.cocoapods.org/']
 
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
@@ -34,4 +38,16 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+  
+  # Fix deployment target for pods
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      
+      # Ensure consistent build settings
+      config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ""
+      config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
+      config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
+    end
+  end
 end
