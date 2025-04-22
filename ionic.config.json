@@ -2,5 +2,10 @@
   "name": "civisto",
   "integrations": {},
   "type": "vue",
-  "id": "com.civisto-v3.app"
+  "id": "com.civisto-v3.app",
+  "ios": {
+    "pod": {
+      "deployment": false
+    }
+  }
 }
