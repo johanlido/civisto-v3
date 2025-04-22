@@ -1,0 +1,8 @@
+{
+    "ios": {
+      "pod": {
+        "deployment": false
+      }
+    }
+  }
+  
