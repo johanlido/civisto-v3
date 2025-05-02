@@ -2,10 +2,25 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>CivistoTestFlight needs access to your photos to allow you to upload and share images</string>
+
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>CivistoTestFlight needs access to get coordinates for user</string>
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>CivistoTestFlight needs access to your  user location</string>
+
+	
+
+	
+
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>civisto-v3</string>
+	<string>civisto-v3</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

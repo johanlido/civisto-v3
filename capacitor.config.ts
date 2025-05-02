@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.civisto-v3.com',
+  appId: 'com.civisto.TestFlight',
   appName: 'civisto-v3',
   webDir: 'dist'
 };

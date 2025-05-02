@@ -1,58 +1,48 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/"></ion-back-button>
-        </ion-buttons>
-        <ion-title>Achieve Something</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content class="ion-padding">
+    <ion-content>
       <div class="container">
         <h1>My Achievements</h1>
-        <p class="subtitle">Track your progress and earn rewards for your community contributions</p>
+        <p class="subtitle">Track your progress and earn rewards for improving your community</p>
         
         <ion-card class="level-card">
           <ion-card-content>
             <div class="level-info">
-              <div class="citizen-level">Citizen Level 2</div>
+              <div class="level-badge">
+                <ion-icon :icon="medal" class="level-icon"></ion-icon>
+                <span>Citizen Level 2</span>
+              </div>
               <div class="points-badge">350 points</div>
             </div>
             <div class="next-level">
-              <div>Next level: 150 points away</div>
-              <div>350/500</div>
+              <div>Next level: <span class="highlight">150 points away</span></div>
+              <div><span class="current-points">350</span>/500</div>
             </div>
             <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: '70%' }"></div>
+              <div class="progress-fill" style="width: 70%"></div>
             </div>
             <div class="level-indicators">
-              <div class="level-indicator">
-                <ion-icon :icon="arrowForward" class="indicator-icon active"></ion-icon>
+              <div class="level-indicator completed">
+                <ion-icon :icon="checkmarkCircle" class="indicator-icon"></ion-icon>
                 <div class="indicator-level">1</div>
               </div>
-              <div class="level-indicator">
-                <ion-icon :icon="medal" class="indicator-icon active"></ion-icon>
-                <div class="indicator-level">2</div>
+              <div class="level-indicator current">
+                <div class="indicator-circle">2</div>
               </div>
               <div class="level-indicator">
-                <ion-icon :icon="star" class="indicator-icon inactive"></ion-icon>
-                <div class="indicator-level">3</div>
+                <div class="indicator-circle">3</div>
               </div>
               <div class="level-indicator">
-                <ion-icon :icon="trophy" class="indicator-icon inactive"></ion-icon>
-                <div class="indicator-level">4</div>
+                <div class="indicator-circle">4</div>
               </div>
               <div class="level-indicator">
-                <ion-icon :icon="sparkles" class="indicator-icon inactive"></ion-icon>
-                <div class="indicator-level">5</div>
+                <div class="indicator-circle">5</div>
               </div>
             </div>
           </ion-card-content>
         </ion-card>
         
-        <ion-segment v-model="selectedTab">
+        <ion-segment v-model="selectedTab" class="custom-segment">
           <ion-segment-button value="badges">
             <ion-label>Badges</ion-label>
           </ion-segment-button>
@@ -67,8 +57,8 @@
         <!-- Badges Content -->
         <div v-if="selectedTab === 'badges'" class="badges-grid">
           <ion-card v-for="(badge, index) in badges" :key="index" class="badge-card">
-            <div :class="['badge-icon', !badge.earned && 'inactive']">
-              <ion-icon :icon="badge.icon" size="medium"></ion-icon>
+            <div class="badge-icon" :class="{ 'inactive': !badge.earned }">
+              <ion-icon :icon="badge.icon" size="large"></ion-icon>
             </div>
             <div class="badge-title">{{ badge.title }}</div>
             <div class="badge-description">{{ badge.description }}</div>
@@ -80,12 +70,12 @@
         </div>
         
         <!-- Challenges Content -->
-        <div v-if="selectedTab === 'challenges'">
+        <div v-if="selectedTab === 'challenges'" class="challenges-container">
           <ion-card v-for="(challenge, index) in challenges" :key="index" class="challenge-card">
             <ion-card-content>
               <div class="challenge-header">
                 <div class="challenge-icon-title">
-                  <div class="challenge-icon">
+                  <div class="challenge-icon" :class="'challenge-' + index">
                     <ion-icon :icon="challenge.icon" size="small"></ion-icon>
                   </div>
                   <div class="challenge-title">{{ challenge.title }}</div>
@@ -96,46 +86,42 @@
               <div class="challenge-progress-bar">
                 <div class="challenge-progress-fill" :style="{ width: challenge.progress + '%' }"></div>
               </div>
-              <div class="challenge-progress-text">{{ challenge.current }}/{{ challenge.total }}</div>
+              <div class="challenge-progress-text">
+                {{ challenge.current }}/{{ challenge.total }}
+              </div>
             </ion-card-content>
           </ion-card>
         </div>
         
         <!-- Rewards Content -->
-        <div v-if="selectedTab === 'rewards'" class="rewards-coming-soon">
-          <p>Rewards section coming soon!</p>
+        <div v-if="selectedTab === 'rewards'" class="rewards-container">
+          <div class="rewards-coming-soon">
+            <p>Rewards section coming soon!</p>
+          </div>
         </div>
       </div>
     </ion-content>
-    
   </ion-page>
 </template>
 
 <script>
 import { 
   IonPage, 
-  IonContent, 
+  IonContent,
   IonCard, 
   IonCardContent, 
   IonSegment, 
   IonSegmentButton, 
   IonLabel, 
   IonIcon, 
-  IonTabs, 
-  IonTabBar, 
-  IonTabButton,
-  IonRouterOutlet
+  IonButton
 } from '@ionic/vue';
 import { 
-  arrowForward, 
   medal, 
   star, 
   trophy, 
-  sparkles, 
-  checkmark, 
-  home, 
-  document, 
-  person,
+  checkmark,
+  checkmarkCircle,
   globe,
   shield
 } from 'ionicons/icons';
@@ -145,31 +131,28 @@ export default defineComponent({
   name: 'AchievementsPage',
   components: {
     IonPage, 
-    IonContent, 
+    IonContent,
     IonCard, 
     IonCardContent, 
     IonSegment, 
     IonSegmentButton, 
     IonLabel, 
-    IonIcon, 
-    IonTabs, 
-    IonTabBar, 
-    IonTabButton,
-    IonRouterOutlet
+    IonIcon,
+    IonButton
   },
   setup() {
     const selectedTab = ref('badges');
     
     const badges = [
       {
-        icon: arrowForward,
+        icon: medal,
         title: 'First Report',
         description: 'Submit your first maintenance report',
         earned: true,
         earnedDate: 'Feb 12'
       },
       {
-        icon: medal,
+        icon: shield,
         title: 'Civic Watchdog',
         description: 'Submit 5 verified reports',
         earned: true,
@@ -186,25 +169,12 @@ export default defineComponent({
         title: 'Problem Solver',
         description: 'Have 3 reports addressed & fixed',
         earned: false
-      },
-      {
-        icon: star,
-        title: 'Town Guardian',
-        description: 'Report issues in 3 different categories',
-        earned: true,
-        earnedDate: 'Apr 1'
-      },
-      {
-        icon: document,
-        title: 'Consistency King',
-        description: 'Submit reports 3 weeks in a row',
-        earned: false
       }
     ];
     
     const challenges = [
       {
-        icon: arrowForward,
+        icon: shield,
         title: 'Spring Cleaning',
         description: 'Report 5 cleanliness issues this month',
         points: 50,
@@ -220,15 +190,6 @@ export default defineComponent({
         current: 3,
         total: 3,
         progress: 100
-      },
-      {
-        icon: shield,
-        title: 'Safety First',
-        description: 'Report 3 safety hazards',
-        points: 100,
-        current: 1,
-        total: 3,
-        progress: 33.3
       }
     ];
     
@@ -237,15 +198,11 @@ export default defineComponent({
       badges,
       challenges,
       // Icons
-      arrowForward,
       medal,
       star,
       trophy,
-      sparkles,
       checkmark,
-      home,
-      document,
-      person,
+      checkmarkCircle,
       globe,
       shield
     };
@@ -254,89 +211,66 @@ export default defineComponent({
 </script>
 
 <style>
-/* Achievements.css */
-:root {
-  --ion-color-primary: #28a745;
-  --ion-color-primary-rgb: 40, 167, 69;
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #23933d;
-  --ion-color-primary-tint: #3eb058;
-  
-  --ion-color-light: #f8f9fa;
-  --ion-color-light-rgb: 248, 249, 250;
-  --ion-color-light-contrast: #000000;
-  --ion-color-light-contrast-rgb: 0, 0, 0;
-  --ion-color-light-shade: #dadddf;
-  --ion-color-light-tint: #f9fafb;
-  
-  --ion-color-medium: #6c757d;
-  --ion-color-medium-rgb: 108, 117, 125;
-  --ion-color-medium-contrast: #ffffff;
-  --ion-color-medium-contrast-rgb: 255, 255, 255;
-  --ion-color-medium-shade: #5f666e;
-  --ion-color-medium-tint: #7b848a;
-  
-  --primary-light: #e5f7ec;
-  --gray-light: #F2F2F2;
-  --gray: #e9ecef;
-}
-
-/* Global Styles */
-* {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-}
-
-ion-content {
-  --background: var(--ion-color-light);
+.container {
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 70px;
 }
 
 h1 {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 8px;
-  color: var(--ion-color-dark);
-}
-
-.container {
-  max-width: 650px;
-  margin: 0 auto;
-  padding-bottom: 70px;
+  color: #1f2937;
 }
 
 .subtitle {
   font-size: 16px;
   font-weight: 400;
-  color: var(--ion-color-medium);
+  color: #6b7280;
   margin-bottom: 24px;
+  line-height: 1.5;
 }
 
 /* Level Card */
 .level-card {
+  background: white;
   margin-bottom: 24px;
-  box-shadow: none;
-  border: 1px solid var(--gray);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .level-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 16px;
 }
 
-.citizen-level {
+.level-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 18px;
   font-weight: 700;
+  color: #1f2937;
+}
+
+.level-icon {
+  color: #22c55e;
+  font-size: 24px;
 }
 
 .points-badge {
-  background-color: var(--ion-color-primary);
+  background-color: #22c55e;
   color: white;
-  padding: 4px 10px;
-  border-radius: 16px;
+  padding: 6px 12px;
+  border-radius: 20px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
 }
 
 .next-level {
@@ -345,130 +279,192 @@ h1 {
   align-items: center;
   margin-bottom: 8px;
   font-size: 14px;
-  color: var(--ion-color-medium);
+  color: #6b7280;
+}
+
+.highlight {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.current-points {
+  color: #22c55e;
+  font-weight: 600;
 }
 
 .progress-bar {
-  height: 8px;
-  background-color: var(--gray-light);
-  border-radius: 4px;
-  margin-bottom: 16px;
+  height: 10px;
+  background-color: #f3f4f6;
+  border-radius: 10px;
+  margin-bottom: 20px;
   overflow: hidden;
+  position: relative;
 }
 
 .progress-fill {
   height: 100%;
-  background-color: var(--ion-color-primary);
-  border-radius: 4px;
+  background: linear-gradient(to right, #22c55e, #3b82f6);
+  border-radius: 10px;
 }
 
 .level-indicators {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
 }
 
 .level-indicator {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  position: relative;
+}
+
+.level-indicator:last-child::after {
+  display: none;
 }
 
 .indicator-icon {
-  width: 24px;
-  height: 24px;
-  color: var(--ion-color-primary);
+  color: #22c55e;
+  font-size: 24px;
+  z-index: 1;
 }
 
-.indicator-icon.inactive {
-  color: #ccc;
+.indicator-circle {
+  width: 24px;
+  height: 24px;
+  background-color: #e5e7eb;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  z-index: 1;
+}
+
+.level-indicator.current .indicator-circle {
+  background-color: #22c55e;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
 }
 
 .indicator-level {
   font-size: 12px;
-  color: var(--ion-color-medium);
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.level-indicator.completed .indicator-level {
+  color: #22c55e;
+  font-weight: 600;
 }
 
 /* Segment/Tabs */
-ion-segment {
+.custom-segment {
   margin-bottom: 20px;
+  border-radius: 12px;
+  --background: #f3f4f6;
+  overflow: hidden;
 }
 
 ion-segment-button {
-  --color: var(--ion-color-medium);
-  --color-checked: var(--ion-color-primary);
-  --indicator-color: var(--ion-color-primary);
+  --color: #6b7280;
+  --color-checked: #22c55e;
+  --indicator-color: white;
+  --indicator-height: 100%;
+  --background-checked: white;
+  --border-radius: 10px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  font-weight: 500;
+  margin: 4px;
+  min-height: 40px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Badges Section */
 .badges-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 16px;
   margin-bottom: 20px;
 }
 
 .badge-card {
-  border: 1px solid var(--gray);
-  border-radius: 8px;
-  padding: 16px;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin: 0;
-  box-shadow: none;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .badge-icon {
-  width: 48px;
-  height: 48px;
-  background-color: var(--ion-color-primary);
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-bottom: 12px;
   color: white;
+  box-shadow: 0 4px 8px rgba(34, 197, 94, 0.2);
 }
 
 .badge-icon.inactive {
-  background-color: var(--gray-light);
-  color: var(--ion-color-medium);
+  background: #e5e7eb;
+  color: #9ca3af;
+  box-shadow: none;
 }
 
 .badge-title {
   font-size: 16px;
   font-weight: 600;
+  color: #1f2937;
   margin-bottom: 4px;
 }
 
 .badge-description {
   font-size: 12px;
-  color: var(--ion-color-medium);
+  color: #6b7280;
   margin-bottom: 8px;
+  line-height: 1.4;
 }
 
 .badge-earned {
   font-size: 12px;
-  color: var(--ion-color-primary);
+  color: #22c55e;
   display: flex;
   align-items: center;
   gap: 4px;
+  font-weight: 500;
 }
 
-/* Challenges Section */
+.challenges-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .challenge-card {
-  margin-bottom: 16px;
-  border: 1px solid var(--gray);
-  border-radius: 8px;
-  box-shadow: none;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  padding: 16px;
+  border: 1px solid #f3f4f6;
 }
 
 .challenge-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 8px;
 }
 
@@ -479,74 +475,106 @@ ion-segment-button {
 }
 
 .challenge-icon {
-  width: 32px;
-  height: 32px;
-  background-color: var(--ion-color-primary);
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.challenge-0 {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.challenge-1 {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 }
 
 .challenge-title {
   font-size: 16px;
   font-weight: 600;
+  color: #1f2937;
 }
 
 .challenge-points {
-  color: var(--ion-color-primary);
-  font-weight: 500;
+  color: #22c55e;
+  font-weight: 600;
+  font-size: 16px;
 }
 
 .challenge-description {
   font-size: 14px;
-  color: var(--ion-color-medium);
-  margin-bottom: 12px;
+  color: #6b7280;
+  margin-bottom: 16px;
+  line-height: 1.4;
 }
 
 .challenge-progress-bar {
   height: 8px;
-  background-color: var(--gray-light);
+  background-color: #f3f4f6;
   border-radius: 4px;
-  margin-bottom: 4px;
   overflow: hidden;
+  margin-bottom: 4px;
 }
 
 .challenge-progress-fill {
   height: 100%;
-  background-color: var(--ion-color-primary);
+  background: linear-gradient(to right, #22c55e, #16a34a);
   border-radius: 4px;
 }
 
 .challenge-progress-text {
-  text-align: right;
+  display: flex;
+  justify-content: space-between;
   font-size: 12px;
-  color: var(--ion-color-medium);
+  color: #6b7280;
 }
 
-/* Rewards Coming Soon */
 .rewards-coming-soon {
   text-align: center;
   padding: 40px 0;
-  color: var(--ion-color-medium);
+  color: #6b7280;
+  font-size: 16px;
+  background: white;
+  border-radius: 16px;
+  margin-top: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* Tab Bar */
-ion-tab-bar {
-  --background: #fff;
-  border-top: 1px solid var(--gray);
-}
-
-ion-tab-button {
-  --color: var(--ion-color-medium);
-  --color-selected: var(--ion-color-primary);
-}
-
-/* Responsive adjustments for smaller screens */
-@media (max-width: 576px) {
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 24px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+  }
+  
+  .level-badge {
+    font-size: 16px;
+  }
+  
   .badges-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .badges-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .rewards-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .rewards-header {
+    grid-column: 1 / -1;
   }
 }
 </style>

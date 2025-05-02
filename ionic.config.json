@@ -1,6 +1,8 @@
 {
   "name": "civisto",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "vue",
   "id": "com.civisto-v3.app"
 }

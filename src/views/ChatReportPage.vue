@@ -1,136 +1,175 @@
 <template>
   <ion-page>
-    <ion-header>
+    <ion-header class="ion-no-border header-blur">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-button @click="goBack">
-            <ion-icon :icon="arrowBack" slot="icon-only"></ion-icon>
+          <ion-button class="back-button" @click="goBack">
+            <ion-icon :icon="arrowBack"></ion-icon>
           </ion-button>
         </ion-buttons>
-        <ion-title>Report Something</ion-title>
+        <ion-title>Report Issue</ion-title>
       </ion-toolbar>
     </ion-header>
     
     <ion-content :scroll-events="true" @ionScroll="handleScroll" ref="contentRef">
       <!-- Main Chat Interface -->
-      <div id="chatInterface" v-if="!showConfirmation">
+      <div class="chat-interface" v-if="!showConfirmation">
         <div class="chat-container" ref="chatContainer">
           <!-- Initial Assistant Message -->
-          <div class="message assistant-message">
-            Hi there! I'm here to help you report issues in your community. What would you like to report today?
+          <div class="message-wrapper assistant-wrapper">
+            <div class="message assistant-message">
+              <p>Hi there! I'm here to help you report issues in your community. What would you like to report today?</p>
+            </div>
           </div>
           
           <!-- Location Info -->
-          <div class="location-info">
-            <div class="location-icon">
-              <ion-icon :icon="locationOutline" size="small"></ion-icon>
-            </div>
-            <div class="location-details">
-              <div class="location-address">{{ reportData.location }}</div>
-              <div class="location-coordinates">{{ reportData.coordinates }}</div>
+          <div class="location-wrapper">
+            <div class="location-card" @click="toggleMap">
+              <ion-icon :icon="locationOutline" class="location-icon"></ion-icon>
+              <div class="location-info">
+                <div class="location-name">{{ reportData.location }}</div>
+                <div class="location-coords">{{ reportData.coordinates }}</div>
+              </div>
+              <ion-icon :icon="chevronForward" class="location-arrow"></ion-icon>
             </div>
           </div>
           
           <!-- Chat Messages -->
-          <div v-for="(message, index) in messages" :key="index"
-               :class="['message', message.sender + '-message']">
-            {{ message.text }}
+          <div 
+            v-for="(message, index) in messages" 
+            :key="index"
+            :class="['message-wrapper', message.sender + '-wrapper']"
+          >
+            <div :class="['message', message.sender + '-message']">
+              <p>{{ message.text }}</p>
+            </div>
           </div>
           
           <!-- Option Buttons Container -->
-          <div class="option-buttons" v-if="showOptions">
-            <ion-button 
+          <div class="options-container" v-if="showOptions">
+            <div 
               v-for="(option, idx) in currentOptions" 
               :key="idx"
-              expand="block"
-              fill="outline"
-              size="small"
               class="option-button"
-              @click="selectOption(option)">
+              @click="selectOption(option)"
+            >
               {{ option }}
-            </ion-button>
+            </div>
           </div>
           
           <!-- Typing Indicator -->
-          <div class="typing-indicator" v-if="isTyping">
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
+          <div class="message-wrapper assistant-wrapper" v-if="isTyping">
+            <div class="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
           </div>
         </div>
       </div>
       
       <!-- Confirmation Screen -->
-      <div class="confirmation-screen" v-if="showConfirmation">
-        <div class="confirmation-icon">
-          <ion-icon :icon="checkmarkOutline" class="confirmation-tick"></ion-icon>
+      <div class="success-screen" v-if="showConfirmation">
+        <div class="success-animation">
+          <div class="success-circle">
+            <ion-icon :icon="checkmarkOutline"></ion-icon>
+          </div>
         </div>
-        <h2 class="confirmation-title">Report Submitted!</h2>
-        <p class="confirmation-message">Thank you for helping to improve your community. We'll notify you when there's an update.</p>
+        <h2>Report Submitted!</h2>
+        <p>Thank you for helping to improve your community. We'll notify you when there's an update.</p>
         <div class="report-id">Report ID: KS-2025-04836</div>
-        <ion-button class="new-report-button" expand="block" @click="resetChat">
+        <ion-button class="new-report-btn" @click="resetChat">
           Create New Report
         </ion-button>
       </div>
     </ion-content>
     
-    <!-- Bottom Area with Suggestions and Input -->
-    <div class="bottom-area" v-if="!showConfirmation">
+    <!-- Map Modal -->
+    <div class="map-modal" :class="{ 'is-active': mapExpanded }">
+      <div class="map-content">
+        <div class="map-header">
+          <h3>Select Location</h3>
+          <ion-button fill="clear" @click="toggleMap">
+            <ion-icon :icon="closeOutline"></ion-icon>
+          </ion-button>
+        </div>
+        <div class="map-container">
+          <iframe
+            width="100%"
+            height="100%"
+            frameborder="0"
+            :src="mapSrc"
+            allowfullscreen
+            @load="attachMapClickHandler"
+            ref="mapIframe"
+          ></iframe>
+        </div>
+        <div class="map-footer">
+          <p>Tap on the map to set a new location</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bottom Input Area -->
+    <div class="input-area" v-if="!showConfirmation">
       <!-- Suggestions -->
       <div class="suggestions" v-if="currentStep === 0">
-        <div class="suggestion-title">Suggested Categories</div>
-        <ion-scroll horizontal="true" class="suggestion-buttons">
-          <ion-button 
+        <p class="suggestions-title">Suggested Categories</p>
+        <div class="suggestions-scroll">
+          <div 
             v-for="category in categories" 
             :key="category.id"
-            fill="outline"
-            size="small"
-            class="suggestion-button"
-            @click="selectCategory(category.id, category.name)">
+            class="suggestion-pill"
+            @click="selectCategory(category.id, category.name)"
+          >
             {{ category.name }}
-          </ion-button>
-        </ion-scroll>
-      </div>
-      
-      <!-- Image Preview -->
-      <div class="image-preview" v-if="reportData.hasPhotos">
-        <div class="preview-container">
-          <ion-img src="/api/placeholder/80/80" alt="Uploaded issue"></ion-img>
-          <div class="remove-image" @click="removeImage">
-            <ion-icon :icon="closeOutline" size="small"></ion-icon>
           </div>
         </div>
       </div>
       
+      <!-- Image Preview -->
+      <div class="image-preview" v-if="reportData.hasPhotos">
+        <div class="preview-box">
+          <ion-img src="/api/placeholder/80/80" alt="Uploaded issue"></ion-img>
+          <button class="remove-image" @click="removeImage">
+            <ion-icon :icon="closeOutline"></ion-icon>
+          </button>
+        </div>
+      </div>
+      
       <!-- Input Container -->
-      <div class="input-container">
-        <ion-button fill="clear" class="attach-button" @click="toggleImagePreview">
-          <ion-icon :icon="imageOutline" slot="icon-only"></ion-icon>
-        </ion-button>
+      <div class="message-composer">
+        <button class="add-photo-btn" @click="toggleImagePreview">
+          <ion-icon :icon="imageOutline"></ion-icon>
+        </button>
         
-        <ion-textarea
-          class="message-input"
-          placeholder="Describe the issue..."
-          v-model="userInput"
-          auto-grow="true"
-          rows="1"
-          @keyup.enter="sendMessage"
-          ref="messageInput">
-        </ion-textarea>
+        <div class="input-wrapper">
+          <ion-textarea
+            class="input-field"
+            placeholder="Describe the issue..."
+            v-model="userInput"
+            auto-grow="true"
+            rows="1"
+            @keyup.enter="sendMessage"
+            ref="messageInput"
+          ></ion-textarea>
+        </div>
         
-        <ion-button 
-          class="send-button" 
+        <button 
+          class="send-btn" 
+          :class="{ 'send-active': userInput.trim() }" 
           :disabled="!userInput.trim()"
-          @click="sendMessage">
-          <ion-icon :icon="paperPlaneOutline" slot="icon-only"></ion-icon>
-        </ion-button>
+          @click="sendMessage"
+        >
+          <ion-icon :icon="paperPlaneOutline"></ion-icon>
+        </button>
       </div>
     </div>
-      </ion-page>
+  </ion-page>
 </template>
 
 <script>
-import { defineComponent, ref, reactive, onMounted, nextTick } from 'vue';
+import { defineComponent, ref, reactive, onMounted, nextTick, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
   IonPage, 
@@ -142,24 +181,16 @@ import {
   IonButton,
   IonIcon,
   IonTextarea,
-  IonImg,
-  IonTabs,
-  IonTabBar,
-  IonTabButton,
-  IonLabel,
-  IonRouterOutlet
+  IonImg
 } from '@ionic/vue';
 import { 
   arrowBack,
-  homeOutline,
-  documentTextOutline,
-  medalOutline,
-  personOutline,
   paperPlaneOutline,
   imageOutline,
   locationOutline,
   closeOutline,
-  checkmarkOutline
+  checkmarkOutline,
+  chevronForward
 } from 'ionicons/icons';
 
 export default defineComponent({
@@ -174,12 +205,7 @@ export default defineComponent({
     IonButton,
     IonIcon,
     IonTextarea,
-    IonImg,
-    IonTabs,
-    IonTabBar,
-    IonTabButton,
-    IonLabel,
-    IonRouterOutlet
+    IonImg
   },
   setup() {
     const router = useRouter();
@@ -195,6 +221,8 @@ export default defineComponent({
     const showOptions = ref(false);
     const currentOptions = ref([]);
     const showConfirmation = ref(false);
+    const mapExpanded = ref(false);
+    const mapIframe = ref(null);
     
     // Report data
     const reportData = reactive({
@@ -337,38 +365,128 @@ export default defineComponent({
       }
     };
     
+    // Helper to parse coordinates from string to numbers
+    const parseCoordinates = (coordStr) => {
+      const match = coordStr.match(/([0-9.]+)[°] N, ([0-9.]+)[°] E/);
+      if (match) {
+        return {
+          lat: parseFloat(match[1]),
+          long: parseFloat(match[2])
+        };
+      }
+      return { lat: 0, long: 0 };
+    };
+
+    // Helper to format coordinates as string
+    const formatCoordinates = (lat, long) => {
+      return `${lat.toFixed(4)}° N, ${long.toFixed(4)}° E`;
+    };
+
+    // Map src computed from reportData.coordinates
+    const mapSrc = computed(() => {
+      const coords = parseCoordinates(reportData.coordinates);
+      const bbox = [
+        (coords.long - 0.01).toFixed(4),
+        (coords.lat - 0.005).toFixed(4),
+        (coords.long + 0.01).toFixed(4),
+        (coords.lat + 0.005).toFixed(4)
+      ].join(',');
+      return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${coords.lat},${coords.long}`;
+    });
+
+    // Toggle map expanded/collapsed
+    const toggleMap = () => {
+      mapExpanded.value = !mapExpanded.value;
+      if (mapExpanded.value) {
+        nextTick(() => {
+          attachMapClickHandler();
+        });
+      }
+    };
+
+    // Attach click handler to iframe map
+    const attachMapClickHandler = () => {
+      if (!mapExpanded.value) return;
+      const iframe = mapIframe.value?.$el || mapIframe.value;
+      if (!iframe || !iframe.contentWindow) return;
+      iframe.contentWindow.document.body.onclick = null;
+      iframe.contentWindow.document.body.onclick = (e) => {
+        const map = iframe.contentWindow.document.querySelector('img.leaflet-tile');
+        if (!map) return;
+        const rect = map.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const width = rect.width;
+        const height = rect.height;
+        const src = iframe.src;
+        const bboxMatch = src.match(/bbox=([0-9.,\-]+)/);
+        if (!bboxMatch) return;
+        const [minLong, minLat, maxLong, maxLat] = bboxMatch[1].split(',').map(Number);
+        const long = minLong + (maxLong - minLong) * (x / width);
+        const lat = maxLat - (maxLat - minLat) * (y / height);
+        updateLocation(lat, long);
+      };
+    };
+
+    // Update location and coordinates in reportData
+    const updateLocation = async (lat, long) => {
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`);
+        const data = await resp.json();
+        reportData.location = data.display_name || 'Unknown location';
+        reportData.coordinates = formatCoordinates(lat, long);
+      } catch {
+        reportData.location = 'Unknown location';
+        reportData.coordinates = formatCoordinates(lat, long);
+      }
+      mapExpanded.value = false;
+    };
+
     // Send message
-    const sendMessage = () => {
+    const sendMessage = async () => {
       if (userInput.value.trim() === '') return;
-      
+
       const message = userInput.value.trim();
       addMessage('human', message);
-      
+
       // Store response based on current step
       if (currentStep.value === 1) {
         reportData.description = message;
       }
-      
-      // Clear input
+
+      try {
+        // Always use up-to-date description and coordinates
+        const coords = parseCoordinates(reportData.coordinates);
+        await fetch('http://localhost:5678/webhook/7475d8ba-6602-4633-b3f0-30d0c002a1de', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: "https://cdn.shopify.com/s/files/1/0274/7288/7913/files/MicrosoftTeams-image_32.jpg?v=1705315718",
+            description: reportData.description || message,
+            coordinates: coords,
+            location: reportData.location,
+            qrCode: "",
+            timestamp: new Date().toISOString(),
+            userProfile: "Private"
+          })
+        });
+      } catch (e) {
+        // Optionally handle error
+      }
+
       userInput.value = '';
-      
-      // Move to next question
       currentStep.value++;
       showNextQuestion();
     };
-    
+
     // Select option
     const selectOption = (option) => {
       addMessage('human', option);
       reportData.severity = option;
       
-      // Hide options
       showOptions.value = false;
-      
-      // Move to next question
       currentStep.value++;
       
-      // Check if we need to show the next question or complete
       if (currentStep.value <= questionFlow.length) {
         showNextQuestion();
       } else {
@@ -394,11 +512,9 @@ export default defineComponent({
         removeTypingIndicator();
         addMessage('assistant', "Thank you for providing all the details. I'm submitting your report now...");
         
-        // Show system message after delay
         setTimeout(() => {
           addMessage('system', "Report submitted successfully!");
           
-          // Show confirmation screen
           setTimeout(() => {
             showConfirmation.value = true;
           }, 1500);
@@ -408,20 +524,17 @@ export default defineComponent({
     
     // Reset chat for new report
     const resetChat = () => {
-      // Reset all variables
       messages.value = [];
       currentStep.value = 0;
       isTyping.value = false;
       showOptions.value = false;
       showConfirmation.value = false;
       
-      // Reset report data
       reportData.category = "";
       reportData.description = "";
       reportData.severity = "";
       reportData.hasPhotos = false;
       
-      // Add initial message
       setTimeout(() => {
         addMessage('assistant', "Hi there! I'm here to help you report issues in your community. What would you like to report today?");
       }, 100);
@@ -450,276 +563,697 @@ export default defineComponent({
       scrollToBottom,
       goBack,
       resetChat,
+      mapExpanded,
+      mapSrc,
+      toggleMap,
+      mapIframe,
+      attachMapClickHandler,
       
-      // Icons
       arrowBack,
-      homeOutline,
-      documentTextOutline,
-      medalOutline,
-      personOutline,
       paperPlaneOutline,
       imageOutline,
       locationOutline,
       closeOutline,
-      checkmarkOutline
+      checkmarkOutline,
+      chevronForward
     };
   }
 });
 </script>
 
-<style scoped>
-/* Report Chat CSS */
+<style>
 :root {
-  --primary: #28a745;
-  --primary-light: #e5f7ec;
-  --background: #f8f9fa;
-  --foreground: #333333;
-  --gray-light: #F2F2F2;
-  --gray-medium: #6c757d;
-  --gray: #e9ecef;
-  --white: #ffffff;
-  --human-bg: #f0f7ff;
-  --human-border: #d1e6ff;
-  --assistant-bg: var(--primary-light);
-  --assistant-border: #c1e7d9;
+  /* Colors - adjusted to match the rest of the app */
+  --c-primary: #22c55e;
+  --c-primary-soft: rgba(34, 197, 94, 0.1);
+  --c-primary-light: #e5f7ec;
+  --c-primary-dark: #16a34a;
+  --c-gray-50: #f9fafb;
+  --c-gray-100: #f3f4f6;
+  --c-gray-200: #e5e7eb;
+  --c-gray-300: #d1d5db;
+  --c-gray-400: #9ca3af;
+  --c-gray-500: #6b7280;
+  --c-gray-600: #4b5563;
+  --c-gray-700: #374151;
+  --c-gray-800: #1f2937;
+  --c-gray-900: #111827;
+  --c-info: #3b82f6;
+  --c-info-light: #eff6ff;
+  --c-success: #22c55e;
+  --c-success-light: #e5f7ec;
+  --c-warning: #f59e0b;
+  --c-warning-light: #fffbeb;
+  --c-danger: #ef4444;
+  --c-danger-light: #fef2f2;
+  --c-white: #ffffff;
+  --c-black: #000000;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-focus: 0 0 0 3px rgba(34, 197, 94, 0.2);
+  
+  /* Durations */
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  
+  /* Z-index */
+  --z-modal: 50;
+  --z-popover: 40;
+  --z-header: 30;
+  --z-footer: 20;
+  --z-base: 10;
+  --z-below: -10;
 }
 
-/* Chat Container */
-.chat-container {
+/* ===== Base Styles ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  color: var(--c-gray-800);
+  background-color: var(--c-gray-50);
+}
+
+/* ===== Header Styles ===== */
+.header-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.8);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+}
+
+ion-toolbar {
+  --border-width: 0;
+  --background: transparent;
+  --min-height: 56px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+}
+
+ion-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.back-button {
+  --color: var(--c-gray-700);
+  --background: var(--c-gray-100);
+  --background-hover: var(--c-gray-200);
+  --background-activated: var(--c-gray-200);
+  --background-focused: var(--c-gray-200);
+  --border-radius: 8px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  margin: 4px 8px;
+  height: 36px;
+  width: 36px;
+}
+
+/* ===== Content Styles ===== */
+ion-content {
+  --background: var(--c-gray-50);
+  --padding-bottom: 100px;
+}
+
+.chat-interface {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  min-height: 100%;
+}
+
+.chat-container {
   padding: 16px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+  padding-bottom: 120px;
 }
 
 /* Message Styles */
+.message-wrapper {
+  display: flex;
+  margin-bottom: 16px;
+  width: 100%; /* Make sure wrapper spans full width */
+}
+
+.assistant-wrapper {
+  justify-content: flex-start; /* Align assistant messages to the left */
+}
+
+.human-wrapper {
+  justify-content: flex-end; /* Align human messages to the right */
+}
+
+.system-wrapper {
+  justify-content: center; /* Center system messages */
+  margin: 8px 0;
+}
+
 .message {
-  max-width: 85%;
+  max-width: 80%; /* Limit message width */
+  border-radius: 18px;
   padding: 12px 16px;
-  border-radius: 12px;
-  line-height: 1.5;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.message p {
+  margin: 0;
   font-size: 15px;
+  line-height: 1.5;
 }
 
 .assistant-message {
+  background-color: var(--c-gray-100);
+  color: var(--c-gray-800);
+  border-bottom-left-radius: 4px;
   align-self: flex-start;
-  background-color: var(--assistant-bg);
-  border: 1px solid var(--assistant-border);
 }
 
 .human-message {
+  background-color: var(--c-primary);
+  color: var(--c-white);
+  border-bottom-right-radius: 4px;
   align-self: flex-end;
-  background-color: var(--human-bg);
-  border: 1px solid var(--human-border);
 }
 
 .system-message {
-  align-self: center;
-  background-color: var(--gray-light);
-  border: 1px solid var(--gray);
-  font-size: 14px;
-  color: var(--gray-medium);
-  padding: 8px 16px;
+  background-color: var(--c-gray-200);
+  color: var(--c-gray-600);
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 12px;
 }
 
-/* Location Info */
-.location-info {
-  background-color: var(--gray-light);
-  border-radius: 8px;
-  padding: 12px;
-  margin-top: 8px;
+/* Location Card */
+.location-wrapper {
+  margin: 16px 0;
+  width: 85%;
+}
+
+.location-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  align-self: flex-start;
-  max-width: 85%;
+  background-color: var(--c-white);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--c-gray-200);
+  transition: all var(--duration-normal) ease;
+}
+
+.location-card:hover, .location-card:active {
+  background-color: var(--c-gray-50);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .location-icon {
-  color: var(--primary);
+  background-color: var(--c-primary-soft);
+  color: var(--c-primary);
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 20px;
+  margin-right: 12px;
 }
 
-.location-details {
+.location-info {
   flex: 1;
 }
 
-.location-address {
+.location-name {
   font-size: 14px;
   font-weight: 500;
+  color: var(--c-gray-800);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.location-coordinates {
+.location-coords {
   font-size: 12px;
-  color: var(--gray-medium);
+  color: var(--c-gray-500);
+}
+
+.location-arrow {
+  color: var(--c-gray-400);
+  font-size: 18px;
+}
+
+/* Options Container */
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 16px;
+  width: 100%; /* Make container full width */
+}
+
+.option-button {
+  max-width: 85%; /* Limit option width */
+  align-self: flex-start; /* Align options to the left like assistant messages */
+  background-color: var(--c-white);
+  border: 1px solid var(--c-gray-200);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  text-align: left;
+  color: var(--c-gray-800);
+  transition: all var(--duration-normal) ease;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.option-button:hover, .option-button:active {
+  background-color: var(--c-primary-light);
+  border-color: var(--c-primary);
+  box-shadow: var(--shadow-md);
 }
 
 /* Typing Indicator */
 .typing-indicator {
   display: flex;
-  gap: 4px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background-color: var(--assistant-bg);
-  align-self: flex-start;
-  width: 60px;
+  align-items: center;
+  background-color: var(--c-gray-100);
+  border-radius: 18px;
+  padding: 12px 16px;
+  border-bottom-left-radius: 4px;
+  box-shadow: var(--shadow-sm);
+  width: auto;
+  height: 38px;
+  max-width: 80px; /* Limit width for typing indicator */
+  align-self: flex-start; /* Align to the left like assistant messages */
 }
 
-.typing-dot {
-  width: 8px;
+.typing-indicator span {
   height: 8px;
-  background-color: var(--primary);
+  width: 8px;
+  float: left;
+  margin: 0 1px;
+  background-color: var(--c-primary);
+  display: block;
   border-radius: 50%;
-  animation: typing-animation 1.5s infinite ease-in-out;
+  opacity: 0.4;
 }
 
-.typing-dot:nth-child(2) {
-  animation-delay: 0.2s;
+.typing-indicator span:nth-of-type(1) {
+  animation: 1s blink infinite 0.3333s;
 }
 
-.typing-dot:nth-child(3) {
-  animation-delay: 0.4s;
+.typing-indicator span:nth-of-type(2) {
+  animation: 1s blink infinite 0.6666s;
 }
 
-@keyframes typing-animation {
-  0%, 60%, 100% {
-    transform: translateY(0);
+.typing-indicator span:nth-of-type(3) {
+  animation: 1s blink infinite 0.9999s;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 1;
   }
-  30% {
-    transform: translateY(-10px);
-  }
 }
 
-/* Bottom Area */
-.bottom-area {
+/* Map Modal */
+.map-modal {
   position: fixed;
-  bottom: 60px; /* Space for navbar */
+  top: 0;
   left: 0;
   right: 0;
-  background-color: var(--white);
-  border-top: 1px solid var(--gray);
-  z-index: 10;
-}
-
-/* Suggestions */
-.suggestions {
-  padding: 12px 16px;
-  background-color: var(--white);
-}
-
-.suggestion-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--gray-medium);
-}
-
-.suggestion-buttons {
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: var(--z-modal);
   display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--duration-normal) ease, visibility var(--duration-normal) ease;
 }
 
-.suggestion-buttons::-webkit-scrollbar {
+.map-modal.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.map-content {
+  background-color: var(--c-white);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.95);
+  transition: transform var(--duration-normal) ease;
+}
+
+.map-modal.is-active .map-content {
+  transform: scale(1);
+}
+
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--c-gray-200);
+}
+
+.map-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--c-gray-800);
+  margin: 0;
+}
+
+.map-header ion-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  margin: 0;
+  height: 36px;
+  width: 36px;
+  --border-radius: 8px;
+  --color: var(--c-gray-600);
+}
+
+.map-container {
+  flex: 1;
+  min-height: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-footer {
+  padding: 12px 16px;
+  text-align: center;
+  background-color: var(--c-gray-50);
+  border-top: 1px solid var(--c-gray-200);
+}
+
+.map-footer p {
+  font-size: 14px;
+  color: var(--c-gray-600);
+  margin: 0;
+}
+
+/* Success Screen */
+.success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  height: 100%;
+  background-color: var(--c-white);
+}
+
+.success-animation {
+  margin-bottom: 32px;
+}
+
+.success-circle {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background-color: var(--c-success-light);
+  color: var(--c-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.2);
+  animation: pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.success-screen h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--c-gray-800);
+  margin-bottom: 16px;
+}
+
+.success-screen p {
+  font-size: 16px;
+  color: var(--c-gray-600);
+  max-width: 340px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
+}
+
+.report-id {
+  display: inline-block;
+  background-color: var(--c-gray-100);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--c-gray-800);
+  margin-bottom: 40px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.new-report-btn {
+  --background: var(--c-primary);
+  --color: var(--c-white);
+  --border-radius: 10px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  --padding-start: 24px;
+  --padding-end: 24px;
+  --box-shadow: var(--shadow-md);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Input Area */
+.input-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--c-white);
+  z-index: var(--z-footer);
+  border-top: 1px solid var(--c-gray-200);
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.04);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.suggestions {
+  padding: 16px 16px 8px;
+}
+
+.suggestions-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-gray-600);
+  margin-bottom: 12px;
+}
+
+.suggestions-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.suggestions-scroll::-webkit-scrollbar {
   display: none;
 }
 
-/* Input Container */
-.input-container {
-  padding: 12px 16px;
-  background-color: var(--white);
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
-  border-top: 1px solid var(--gray);
-}
-
-/* Image Preview */
-.image-preview {
-  display: flex;
-  gap: 8px;
+.suggestion-pill {
+  background-color: var(--c-white);
+  border: 1px solid var(--c-gray-200);
   padding: 8px 16px;
-  background-color: var(--white);
+  border-radius: 20px;
+  font-size: 14px;
+  white-space: nowrap;
+  color: var(--c-gray-800);
+  transition: all var(--duration-normal) ease;
+  cursor: pointer;
 }
 
-.preview-container {
+.suggestion-pill:hover, .suggestion-pill:active {
+  background-color: var(--c-primary-light);
+  border-color: var(--c-primary);
+  color: var(--c-primary-dark);
+}
+
+.image-preview {
+  padding: 12px 16px;
+  border-top: 1px solid var(--c-gray-200);
+}
+
+.preview-box {
   position: relative;
   width: 80px;
   height: 80px;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .remove-image {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 20px;
-  height: 20px;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: var(--c-white);
+  border: none;
   border-radius: 50%;
+  width: 24px;
+  height: 24px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
-  color: white;
 }
 
-/* Option Buttons */
-.option-buttons {
+.message-composer {
   display: flex;
-  flex-direction: column;
+  align-items: flex-end;
+  padding: 12px 16px;
   gap: 8px;
-  margin-top: 8px;
-  align-self: flex-start;
-  width: 85%;
 }
 
-/* Confirmation Screen */
-.confirmation-screen {
+.add-photo-btn {
+  background-color: var(--c-gray-100);
+  border: none;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
-  text-align: center;
-  min-height: 80vh;
+  color: var(--c-gray-600);
+  transition: all var(--duration-normal) ease;
+  cursor: pointer;
 }
 
-.confirmation-icon {
-  width: 80px;
-  height: 80px;
-  background-color: var(--primary-light);
-  border-radius: 50%;
+.add-photo-btn:hover, .add-photo-btn:active {
+  background-color: var(--c-gray-200);
+  color: var(--c-gray-700);
+}
+
+.input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.input-field {
+  --background: var(--c-gray-100);
+  --color: var(--c-gray-800);
+  --placeholder-color: var(--c-gray-500);
+  --placeholder-opacity: 1;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  border-radius: 20px;
+  max-height: 120px;
+  font-size: 15px;
+  --border-radius: 20px !important;
+  border: 1px solid var(--c-gray-200);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: border-color var(--duration-normal) ease, box-shadow var(--duration-normal) ease;
+}
+
+.input-field:focus {
+  border-color: var(--c-primary);
+  box-shadow: var(--shadow-focus);
+}
+
+.send-btn {
+  background-color: var(--c-gray-200);
+  border: none;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  margin-bottom: 24px;
+  justify-content: center;
+  color: var(--c-gray-500);
+  transition: all var(--duration-normal) ease;
+  cursor: pointer;
 }
 
-.confirmation-tick {
-  color: var(--primary);
-  font-size: 48px;
+.send-btn.send-active {
+  background-color: var(--c-primary);
+  color: var(--c-white);
+  transform: scale(1);
+  box-shadow: var(--shadow-sm);
 }
 
-.confirmation-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 8px;
+.send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.confirmation-message {
-  font-size: 16px;
-  color: var(--gray-medium);
-  margin-bottom: 16px;
+/* Responsive Styles */
+@media (min-width: 640px) {
+  .input-area {
+    max-width: 640px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 1px solid var(--c-gray-200);
+    border-right: 1px solid var(--c-gray-200);
+  }
 }
 
-.report-id {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--primary);
-  margin-bottom: 32px;
+@media (max-width: 480px) {
+  .chat-container {
+    padding: 12px;
+  }
+  
+  .message p {
+    font-size: 14px;
+  }
+  
+  .success-screen h2 {
+    font-size: 22px;
+  }
+  
+  .success-screen p {
+    font-size: 15px;
+  }
+  
+  .success-circle {
+    width: 80px;
+    height: 80px;
+    font-size: 40px;
+  }
 }
 </style>

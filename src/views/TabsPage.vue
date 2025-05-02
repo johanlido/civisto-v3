@@ -37,35 +37,75 @@ import {
   IonTabButton, 
   IonIcon, 
   IonLabel, 
-  IonRouterOutlet 
+  IonRouterOutlet,
+  IonPage
 } from '@ionic/vue';
 import { 
   homeOutline, 
-  addCircleOutline,
   personOutline,
-  medalOutline ,
-  documentTextOutline
+  medalOutline,
+  documentTextOutline,
+  addCircleOutline
 } from 'ionicons/icons';
 </script>
 
 <style scoped>
-.new-report {
-  position: relative;
+.modern-tab-bar {
+  --background: #ffffff;
+  height: 60px; /* Slightly increased for more space */
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
+  border-top: 1px solid #f1f1f1;
+  padding-top: 6px; /* Added padding at the top */
 }
 
-.add-button {
-  width: 48px;
-  height: 48px;
-  background-color: var(--ion-color-primary);
+.tab-button {
+  --color: #6b7280;
+  --color-selected: #22c55e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-icon {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.tab-label {
+  font-size: 12px;
+  margin-top: 4px; /* Consistent margin */
+}
+
+.report-tab {
+  position: relative;
+  margin-top: -12px; /* Adjust this value to position the circle properly */
+}
+
+.report-button {
+  background-color: #22c55e;
+  color: white;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
-  justify-content: center;
   align-items: center;
-  color: white;
-  position: absolute;
-  top: -24px;
-  left: 50%;
-  transform: translateX(-50%);
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.report-icon {
+  font-size: 20px;
+}
+
+/* Selected state styling */
+.tab-button.tab-selected .tab-icon,
+.tab-button.tab-selected .tab-label {
+  color: #22c55e;
+}
+
+.tab-button.tab-selected.report-tab .report-button {
+  background-color: #1ca04a;
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
 }
 </style>

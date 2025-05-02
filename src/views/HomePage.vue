@@ -3,23 +3,15 @@
     <ion-header class="ion-no-border">
       <ion-toolbar>
         <div class="logo" slot="start">Civisto</div>
-        <ion-buttons slot="end" class="header-icons">
-          <ion-button>
-            <ion-icon :icon="notificationsOutline" slot="icon-only"></ion-icon>
-          </ion-button>
-          <ion-avatar class="avatar">
-            <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="avatar" />
-          </ion-avatar>
-        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
-    <!-- Background with Gradient and Dots Pattern -->
+    <!-- Background with subtle pattern -->
     <div class="background-pattern"></div>
 
     <ion-content>
       <div class="main-content">
-        <!-- Modern Hero Section -->
+        <!-- Hero Section -->
         <div class="hero-section">
           <div class="hero-card">
             <!-- Abstract pattern elements -->
@@ -27,24 +19,19 @@
             <div class="pattern-circle-2"></div>
             
             <h1>Make your community better today</h1>
-            <p>Report issues in your neighborhood or scan QR codes at designated locations.</p>
+            <p>Report issues in your neighborhood to improve your local environment.</p>
             
-            <!-- Action Buttons -->
+            <!-- Action Button -->
             <div class="action-buttons">
               <ion-button class="btn-primary" expand="block" @click="reportIssue">
                 <ion-icon :icon="addOutline" slot="start"></ion-icon>
-                <span>Report</span>
-              </ion-button>
-              
-              <ion-button class="btn-secondary" expand="block" @click="scanQR">
-                <ion-icon :icon="gridOutline" slot="start"></ion-icon>
-                <span>Scan QR</span>
+                <span>Report an Issue</span>
               </ion-button>
             </div>
           </div>
         </div>
 
-        <!-- Modern Impact Stats Section -->
+        <!-- Impact Stats Section -->
         <div class="stats-section">
           <h2>Your Community Impact</h2>
           
@@ -149,33 +136,21 @@ import {
   IonPage,
   IonHeader,
   IonToolbar,
-  IonButtons,
   IonButton,
   IonIcon,
   IonContent,
   IonCard,
   IonCardContent,
   IonBadge,
-  IonProgressBar,
-  IonTabs,
-  IonTabBar,
-  IonTabButton,
-  IonLabel,
-  IonRouterOutlet,
-  IonAvatar
+  IonProgressBar
 } from '@ionic/vue';
 import {
-  notificationsOutline,
-  homeOutline,
-  clipboardOutline,
   addOutline,
-  ribbonOutline,
-  personOutline,
   chevronForwardOutline,
-  gridOutline,
   flashOutline,
   cartOutline,
-
+  constructOutline,
+  brushOutline
 } from 'ionicons/icons';
 
 export default defineComponent({
@@ -184,20 +159,13 @@ export default defineComponent({
     IonPage,
     IonHeader,
     IonToolbar,
-    IonButtons,
     IonButton,
     IonIcon,
     IonContent,
     IonCard,
     IonCardContent,
     IonBadge,
-    IonProgressBar,
-    IonTabs,
-    IonTabBar,
-    IonTabButton,
-    IonLabel,
-    IonRouterOutlet,
-    IonAvatar
+    IonProgressBar
   },
   setup() {
     const router = useRouter();
@@ -227,79 +195,65 @@ export default defineComponent({
     // Sample data for trending issues
     const trendingIssues = ref([
       {
-        icon: flashOutline,
+        icon: brushOutline,
         iconClass: 'red',
         title: 'Graffiti on Main Street',
         count: '7 reports this week'
       },
       {
-        icon: flashOutline,
+        icon: cartOutline,
         iconClass: 'yellow',
         title: 'Illegal Parking Near Park',
         count: '5 reports this week'
       },
       {
-        icon: flashOutline,
+        icon: constructOutline,
         iconClass: 'blue',
-        title: 'Trolleys at Central Station',
+        title: 'Potholes on Central Avenue',
         count: '3 reports this week'
       }
     ]);
     
     // Functions for handling user actions
     const reportIssue = () => {
-      console.log('Report Issue button clicked');
-      router.push('/report');
+      router.push('/tabs/chat-report');
     };
     
-    const scanQR = () => {
-      console.log('Scan QR button clicked');
-      // Implement QR scanning functionality
-    };
+    // Removed scanQR function
     
     const viewAllReports = () => {
-      console.log('View All clicked');
-      router.push('/reports');
+      router.push('/tabs/reports');
     };
     
     const openReport = (report) => {
-      console.log('Report card clicked:', report.title);
-      router.push(`/reports/${report.title.toLowerCase().replace(/\s+/g, '-')}`);
+      router.push(`/tabs/reports/${report.title.toLowerCase().replace(/\s+/g, '-')}`);
     };
     
     const openTrend = (trend) => {
-      console.log('Trending card clicked:', trend.title);
-      router.push(`/trends/${trend.title.toLowerCase().replace(/\s+/g, '-')}`);
+      router.push(`/tabs/reports?filter=${trend.title.toLowerCase().replace(/\s+/g, '-')}`);
     };
     
     return {
       recentReports,
       trendingIssues,
       reportIssue,
-      scanQR,
       viewAllReports,
       openReport,
       openTrend,
       
       // Icons
-      notificationsOutline,
-      homeOutline,
-      clipboardOutline,
       addOutline,
-      ribbonOutline,
-      personOutline,
       chevronForwardOutline,
-      gridOutline,
       flashOutline,
-      cartOutline
+      cartOutline,
+      constructOutline,
+      brushOutline
     };
   }
 });
 </script>
 
-<style>
-/* Civisto App Styles for Ionic Vue */
-
+<style scoped>
 /* Base Variables */
 :root {
   --ion-color-primary: #22c55e;
@@ -316,53 +270,6 @@ export default defineComponent({
   
   --ion-background-color: #f9fafb;
   --ion-text-color: #111827;
-  
-  --ion-font-family: 'Inter', sans-serif;
-}
-
-/* Override Ionic defaults */
-ion-content {
-  --background: transparent;
-}
-
-ion-toolbar {
-  --background: #ffffff;
-  --border-color: transparent;
-  --padding-top: 12px;
-  --padding-bottom: 12px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
-
-ion-card {
-  margin: 0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  border-radius: 12px;
-}
-
-ion-progress-bar {
-  --buffer-background: #f3f4f6;
-  --progress-background: linear-gradient(to right, #22c55e, #3b82f6);
-  height: 8px;
-  border-radius: 9999px;
-}
-
-ion-tab-bar {
-  --background: #ffffff;
-  border-top: 1px solid #e5e7eb;
-  height: 64px;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-}
-
-ion-tab-button {
-  --color: #6b7280;
-  --color-selected: #16a34a;
-}
-
-ion-badge {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 9999px;
 }
 
 /* Background Pattern */
@@ -374,7 +281,7 @@ ion-badge {
   background: linear-gradient(to bottom, #e8f7efcc, #e8f7ef00);
   background-image: radial-gradient(circle, #22c55e 1px, transparent 1px);
   background-size: 24px 24px;
-  opacity: 0.35;
+  opacity: 0.3;
 }
 
 /* Logo */
@@ -384,24 +291,16 @@ ion-badge {
   font-size: 24px;
   color: #22c55e;
   padding-left: 8px;
+  letter-spacing: 1px;
 }
 
-/* Header icons */
-.header-icons {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-}
+/* Removed header icons styles */
 
 /* Main Content */
 .main-content {
   position: relative;
   z-index: 10;
+  padding: 16px;
   padding-bottom: 80px;
 }
 
@@ -438,30 +337,15 @@ ion-badge {
 
 /* Hero Section */
 .hero-section {
-  padding: 16px;
-  padding-top: 24px;
   padding-bottom: 24px;
   position: relative;
 }
 
-.hero-section::after {
-  content: '';
-  position: absolute;
-  bottom: -64px;
-  right: 0;
-  width: 96px;
-  height: 96px;
-  background-color: #dcfce7;
-  border-radius: 50%;
-  opacity: 0.5;
-  z-index: -1;
-}
-
 .hero-card {
   background: linear-gradient(to right, #22c55e, #16a34a);
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.15);
+  padding: 24px;
   overflow: hidden;
   position: relative;
 }
@@ -489,28 +373,29 @@ ion-badge {
 }
 
 .hero-card h1 {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   color: white;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   position: relative;
   z-index: 10;
   max-width: 300px;
 }
 
 .hero-card p {
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 16px;
-  font-weight: 300;
+  margin-bottom: 24px;
+  font-weight: 400;
   position: relative;
   z-index: 10;
   max-width: 320px;
+  line-height: 1.5;
 }
 
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   position: relative;
   z-index: 10;
   width: 100%;
@@ -519,44 +404,33 @@ ion-badge {
 /* Override Ionic button styles for action buttons */
 .action-buttons ion-button {
   margin: 0;
-  height: auto;
-  white-space: nowrap;
+  height: 46px;
+  flex: 1;
 }
 
 .btn-primary {
   --background: white;
-  --color: #16a34a;
-  --border-radius: 9999px;
+  --color: #22c55e;
+  --border-radius: 12px;
   --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --padding-start: 12px;
-  --padding-end: 12px;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
-  font-weight: 500;
-  font-size: 14px;
+  --background-activated: #f0fdf4;
+  --background-focused: #f0fdf4;
+  --background-hover: #f0fdf4;
+  font-weight: 600;
+  font-size: 15px;
+  border: 1px solid #dcfce7;
 }
 
-.btn-secondary {
-  --background: #16a34a;
-  --color: white;
-  --border-radius: 9999px;
-  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --padding-start: 12px;
-  --padding-end: 12px;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  border: 1px solid white;
-}
+/* Removed btn-secondary style */
 
 /* Stats Section */
 .stats-section {
-  padding: 24px 16px;
+  padding-top: 24px;
+  padding-bottom: 24px;
 }
 
 .stats-section h2 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 16px;
@@ -564,13 +438,16 @@ ion-badge {
 
 .stats-card {
   --background: white;
-  --padding: 0;
+  --border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin: 0;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+  margin-bottom: 20px;
 }
 
 .stat-item {
@@ -580,8 +457,8 @@ ion-badge {
 }
 
 .stat-circle {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -615,17 +492,16 @@ ion-badge {
 
 .stat-number {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 14px;
   color: #6b7280;
   font-weight: 500;
 }
 
 .progress-container {
-  margin-top: 16px;
   padding: 0 4px;
 }
 
@@ -633,22 +509,29 @@ ion-badge {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .progress-header span {
-  font-size: 12px;
+  font-size: 14px;
   color: #6b7280;
 }
 
 .progress-header span:last-child {
-  font-weight: 500;
+  font-weight: 600;
   color: #374151;
+}
+
+.progress-bar {
+  height: 8px;
+  --buffer-background: #f3f4f6;
+  --progress-background: linear-gradient(to right, #22c55e, #3b82f6);
 }
 
 /* Reports Section */
 .reports-section {
-  padding: 24px 16px 16px;
+  padding-top: 24px;
+  padding-bottom: 24px;
 }
 
 .section-header {
@@ -659,7 +542,7 @@ ion-badge {
 }
 
 .section-header h2 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #1f2937;
 }
@@ -668,42 +551,47 @@ ion-badge {
   --color: #16a34a;
   --box-shadow: none;
   --background: transparent;
-  --padding-start: 0;
-  --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
+  --padding-start: 8px;
+  --padding-end: 8px;
   font-size: 14px;
+  font-weight: 500;
   height: auto;
   margin: 0;
-  font-weight: normal;
 }
 
 .report-cards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .report-card {
-  --padding: 0;
   --background: white;
-  --margin-bottom: 12px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.report-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 .report-card ion-card-content {
-  padding: 12px;
+  padding: 16px;
 }
 
 .report-content {
   display: flex;
-  gap: 12px;
+  gap: 16px;
 }
 
 .report-image {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   background-color: #f3f4f6;
-  border-radius: 8px;
+  border-radius: 12px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -728,12 +616,17 @@ ion-badge {
 .report-status-row {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 4px;
 }
 
 .status-badge {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
   font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 9999px;
+  font-weight: 500;
+  height: 22px;
 }
 
 .status-badge.yellow {
@@ -752,24 +645,27 @@ ion-badge {
 }
 
 .report-details h3 {
-  font-weight: 500;
+  font-weight: 600;
   margin-top: 4px;
+  margin-bottom: 4px;
   font-size: 16px;
+  color: #1f2937;
 }
 
 .report-details p {
-  font-size: 12px;
+  font-size: 14px;
   color: #6b7280;
-  margin-top: 4px;
+  margin: 0;
 }
 
 /* Trending Section */
 .trending-section {
-  padding: 24px 16px 80px;
+  padding-top: 24px;
+  padding-bottom: 80px;
 }
 
 .trending-section h2 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 16px;
@@ -778,32 +674,38 @@ ion-badge {
 .trending-cards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .trending-card {
-  --padding: 0;
   --background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin: 0;
+  transition: transform 0.2s ease;
+}
+
+.trending-card:hover {
+  transform: translateY(-2px);
 }
 
 .trending-card ion-card-content {
-  padding: 12px;
+  padding: 16px;
 }
 
 .trending-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
 
 .icon-container {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
+  margin-right: 16px;
 }
 
 .icon-container.red {
@@ -835,39 +737,21 @@ ion-badge {
 }
 
 .trending-details h3 {
-  font-weight: 500;
+  font-weight: 600;
   font-size: 16px;
+  margin-bottom: 4px;
+  color: #1f2937;
 }
 
 .trending-details p {
-  font-size: 12px;
+  font-size: 14px;
   color: #6b7280;
-  font-weight: 300;
+  margin: 0;
 }
 
 .arrow-icon {
   color: #9ca3af;
-}
-
-/* New Report Button */
-.new-report .add-button {
-  width: 40px;
-  height: 40px;
-  background-color: #22c55e;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 4px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.new-report .add-button ion-icon {
-  color: white;
-}
-
-.new-report {
-  --color: #16a34a;
+  margin-left: 12px;
 }
 
 /* Responsive adjustments */
@@ -876,62 +760,22 @@ ion-badge {
     font-size: 20px;
   }
   
-  .action-buttons {
-    flex-direction: row;
-    gap: 6px;
-    justify-content: space-between;
-  }
-  
-  .btn-primary,
-  .btn-secondary {
-    --padding-start: 8px;
-    --padding-end: 8px;
-    font-size: 12px;
-  }
-  
-  /* Replace the general ion-icon selector with specific ones */
-  .hero-section ion-icon,
-  .section-header ion-icon,
-  .report-content ion-icon,
-  .trending-content ion-icon {
-    font-size: 14px;
-  }
-  
   .hero-card h1 {
-    font-size: 18px;
+    font-size: 20px;
   }
   
   .hero-card p {
-    font-size: 12px;
-    margin-bottom: 14px;
+    font-size: 14px;
+    margin-bottom: 20px;
   }
   
-  ion-tab-button ion-label {
-    font-size: 10px;
+  .action-buttons {
+    flex-direction: column;
   }
   
   .report-cards,
   .trending-cards {
-    gap: 8px;
-  }
-}
-
-/* Extra small devices */
-@media (max-width: 360px) {
-  .btn-primary,
-  .btn-secondary {
-    --padding-start: 6px;
-    --padding-end: 6px;
-    font-size: 11px;
-  }
-  
-  .hero-card h1 {
-    font-size: 16px;
-  }
-  
-  .hero-card p {
-    font-size: 11px;
-    margin-bottom: 12px;
+    gap: 12px;
   }
 }
 
@@ -939,23 +783,17 @@ ion-badge {
   .report-cards, 
   .trending-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-  }
-  
-  .hero-section {
-    padding: 32px;
-  }
-  
-  .stats-section, 
-  .reports-section, 
-  .trending-section {
-    padding: 32px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
   }
   
   .hero-card {
-    max-width: 768px;
+    max-width: 900px;
     margin: 0 auto;
+  }
+  
+  .action-buttons {
+    max-width: 500px;
   }
 }
 
